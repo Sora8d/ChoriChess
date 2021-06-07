@@ -14,12 +14,10 @@ import os
 #Add a mode to play through Chorichess ----- Fix this, needs a better way to handle id choices
 #Give a unique message to black and white players ---- Improved
 
-#Bug: /sel with a number not in the list makes the program malfunction.
 
 
 
-
-response= {'bot': None}
+response= {'selection': None}
 updater = Updater(token=Config.TOKEN, use_context=True)
 dispatcher= updater.dispatcher
 #Games and saved stuff, for GROUP GAMES
@@ -117,11 +115,14 @@ class Game_Bot_Chess(Game_Chess):
         else:
             updater.bot.sendMessage(chat_id=self.players[self.turn][1], text=text)
         t= 0
-        while response['bot'] == None and t < 60:
+        while response['selection'] == None and t < 60:
             time.sleep(1)
             t+=1
-        mov= quant[response['bot']]
-        response['bot']= None
+        selection = response['selection']
+        response['selection'] = None
+        if type(selection) != int or len(quant)-1 < selection:
+            return 0
+        mov= quant[selection]
         return mov
 
     def resign(self, resigner):
@@ -195,7 +196,7 @@ move_g_handler= CommandHandler('move', move_g)
 dispatcher.add_handler(move_g_handler)
 
 def choose_g(update, context):
-    response['bot']= int(context.args[0])
+    response['selection']= int(context.args[0])
     return
 
 choose_g_handler= CommandHandler('sel', choose_g)
@@ -218,3 +219,7 @@ dispatcher.add_handler(test_handler)
 
 if __name__=='__main__':
     updater.start_polling()
+    try:
+        os.mkdir(Path('./b_imgs'))
+    except Exception:
+        pass

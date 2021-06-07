@@ -514,9 +514,11 @@ class Game_Chess():
 
                 self.turn_change()
                 return self.img_s(1, self.board.table[move].name + " moved to " + move)
-            else:
 #Makes player to choose between the pieces
+            else:
                 quant_chosen = self.mul_pieces(quant)
+                if quant_chosen == 0:
+                    return self.img_s(0, "No valid movement")
                 quant_chosen.movement(move)
 #Win cond.
                 game_over=self.endgame_check()
@@ -558,4 +560,8 @@ class Game_Chess():
     def mul_pieces(self, quant):
         for x in range(len(quant)):
             print(str(x)+': '+ quant[x].type + 'in' +quant[x].position)
-        return quant[int(input('Input the number of the piece u want to move \n'))]
+        election=int(input('Input the number of the piece u want to move \n'))
+        if len(quant)-1 < election:
+            return 0
+        else:
+            return quant[election]
