@@ -6,7 +6,7 @@ import PIL
 #Create turns
 
 class Board():
-    b_img= Image.open('images/tablero.png')
+
     def __init__(self):
         self.table = {}
         for x in range(1,9):
@@ -18,7 +18,8 @@ class Board():
         self.pieces[1] = {}
         self.pieces[0] = {}
         self.av_moves= []
-        self.c_img=Board.b_img.copy()
+        self.b_img= Image.open('images/tablero_{}.png'.format(random.randint(1,4)))
+        self.c_img=self.b_img.copy()
         for x in range(0, 2):
             self.pieces[x]['P']= []
             self.pieces[x]['R']= []
@@ -33,7 +34,7 @@ class Board():
             pawnw=Pawn(Letter + str(2), 1, self, img=Image.open('images/peon.png'))
             # self.pieces[1]['P'].append(pawnw)
 
-            pawnb=Pawn(Letter + str(7), 0, self, img=Image.open('images/peon.png'))
+            pawnb=Pawn(Letter + str(7), 0, self, img=Image.open('images/peon_b.png'))
             # self.pieces[0]['P'].append(pawnb)
 
 #Setting other pieces
@@ -46,11 +47,11 @@ class Board():
         'K': [King('e1', 1, self, img=Image.open('images/king.png'))]
         },
         0:{
-        'R': [Rook('a8', 0, self, img=Image.open('images/torre.png')), Rook('h8', 0, self, img=Image.open('images/torre.png'))],
-        'B': [Bishop('c8', 0, self, img=Image.open('images/alfil2.png')), Bishop('f8', 0, self, img=Image.open('images/alfil2.png'))],
-        'N': [Knight('b8', 0, self, img=Image.open('images/horse.png')), Knight('g8', 0, self, img=Image.open('images/horse.png'))],
-        'Q': [Queen('d8', 0,self, img=Image.open('images/queen.png'))],
-        'K': [King('e8', 0, self, img=Image.open('images/king.png'))]
+        'R': [Rook('a8', 0, self, img=Image.open('images/torre_b.png')), Rook('h8', 0, self, img=Image.open('images/torre_b.png'))],
+        'B': [Bishop('c8', 0, self, img=Image.open('images/alfil_b.png')), Bishop('f8', 0, self, img=Image.open('images/alfil_b.png'))],
+        'N': [Knight('b8', 0, self, img=Image.open('images/horse_b.png')), Knight('g8', 0, self, img=Image.open('images/horse_b.png'))],
+        'Q': [Queen('d8', 0,self, img=Image.open('images/queen_b.png'))],
+        'K': [King('e8', 0, self, img=Image.open('images/king_b.png'))]
         }
         }
         # for x, i in Pieces.items():
