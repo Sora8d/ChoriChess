@@ -1,3 +1,15 @@
+2.0 (15/07/2021):
+    Changes:
+
+    1- Divided chess_bot into chess_bot and chori_bot, the second now cointaining the telegram bot while the telegram-ready chess remains in the chess_bot.
+
+    2- In chess, now move_handler is the main messaging function instead of img_s, that now just creates and saves images. This function is also used in the telegram bot, changed in Game_Bot_Chess to send telegram messages. 
+
+    3- Also in chess, players are added in their own function instead of through __init__.
+
+    4- Removed global variable 'response' and added it into the Game_Bot_Chess to keeps thing local and avoid possible problems between simultaneus games. 
+
+
 1.0 (06/06/2021):
     Changes:
 
