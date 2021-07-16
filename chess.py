@@ -428,7 +428,7 @@ class King(Piece):
         return 0
 
 class Game_Chess():
-    def __init__(self, players):
+    def __init__(self):
         self.turn= 1
         self.n_turn= 0
         self.board= Board()
@@ -436,16 +436,17 @@ class Game_Chess():
         self.game= 0
         self.winner= None
 
-        b=random.choice(players)
-        self.players.append(b)
-        if b == players[0]:
-            self.players.append(players[1])
-        else:
-            self.players.append(players[0])
+    def add_player(self, player):
+        if len(self.players) < 2:
+            self.players.append(player)
+            print(self.players)
+        if len(self.players) == 2  and self.game == 0:
+            self.players= random.sample(self.players, 2)
+
     def startgame(self):
         self.game= 1
         self.board.set_up_game()
-        self.img_s(5,'Game Set Up')
+        self.move_handler(5,'Game Set Up')
 
     def endgame_check(self):
         en_k_check= self.board.king_move_check(self.n_turn, self.turn)
@@ -461,23 +462,29 @@ class Game_Chess():
         else:
             return None
 
-#This function here is a little spaghetti, it both resends the message to be returned and checks if a board image needs to be created.
-    def img_s(self, state, msg):
-        invert_n= [7,6,5,4,3,2,1,0]
-        if state != 0:
-            self.board.c_img = self.board.b_img.copy()
-            for x in self.board.pieces:
-                for i in self.board.pieces[x]:
-                    for z in self.board.pieces[x][i]:
-                        self.board.c_img.paste(z.img, (128*(ord(z.position[0])-97), 128*(invert_n[int(z.position[1])-1])), z.img)
-            self.board.c_img.show()
+
+    def move_handler(self, state, msg):
+        if state != 0 and state != 4:
+            self.img_s()
         return state, msg
+
+#If movement is valid creates the board img
+    def img_s(self):
+        invert_n= [7,6,5,4,3,2,1,0]
+        self.board.c_img = self.board.b_img.copy()
+        for x in self.board.pieces:
+            for i in self.board.pieces[x]:
+                for z in self.board.pieces[x][i]:
+                    self.board.c_img.paste(z.img, (128*(ord(z.position[0])-97), 128*(invert_n[int(z.position[1])-1])), z.img)
+        self.board.c_img.show()
+        return
+
 
     def move(self, player, move):
         if self.game == 0:
-            return self.img_s(0, "Game Over")
+            return self.move_handler(0, "Game Over")
         if self.players[self.turn] != player:
-            return self.img_s(4, "Its not your turn")
+            return self.move_handler(4, "Its not your turn")
 #Pure the moves
         k_check= self.board.king_move_check(self.turn, self.n_turn)
 # This gives every value in k_check        [j for i in k_check.values() for j in i]
@@ -493,7 +500,7 @@ class Game_Chess():
                     return game_over
 
                 self.turn_change()
-            return self.img_s(state, w_t_r[state])
+            return self.move_handler(state, w_t_r[state])
 
 
         if len(move) == 2:
@@ -514,20 +521,20 @@ class Game_Chess():
                     return game_over
 
                 self.turn_change()
-                return self.img_s(1, self.board.table[move].name + " moved to " + move)
+                return self.move_handler(1, self.board.table[move].name + " moved to " + move)
 #Makes player to choose between the pieces
             else:
                 quant_chosen = self.mul_pieces(quant)
                 if quant_chosen == 0:
-                    return self.img_s(0, "No valid movement")
+                    return self.move_handler(0, "No valid movement")
                 quant_chosen.movement(move)
 #Win cond.
                 game_over=self.endgame_check()
                 if game_over != None:
                     return game_over
                 self.turn_change()
-                return self.img_s(1, str(self.board.table[move].position) + " moved to " + move)
-        return self.img_s(0, "No valid movement")
+                return self.move_handler(1, str(self.board.table[move].position) + " moved to " + move)
+        return self.move_handler(0, "No valid movement")
 
     def castle(self, move):
         numbah= self.board.pieces[self.turn]['K'][0].position[1]
