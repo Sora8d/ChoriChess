@@ -1,62 +1,10 @@
-from chess import Game_Chess
-from roclasses import ro_manager
+from engine_logics.base_chess import Game_Chess
+from engine_logics.stockfish_bot import Bridge_Stock_Chess
 import time
-from pathlib import Path
 import os
-#TODO
-#Make more than 1 current image so multiple games dont overlap
-#Add a mode to play through Chorichess ----- Fix this, needs a better way to handle id choices
-#Give a unique message to black and white players ---- Improved
-    
+from pathlib import Path
 
-#Games and saved stuff, for GROUP GAMES
-class Chess_Bot_Handler(ro_manager):
-    def __init__(self, telegrambot):
-        super().__init__()
-        self.telegrambot = telegrambot
-
-    def single_player_t(self, *args, **kwargs):
-        room= self.create_room(kwargs['ef_id'], 'singleplayer')
-        self.put_users(kwargs['user']['first_name'],kwargs['ef_id'], kwargs['user']['id'], room)
-        self.put_users(kwargs['user']['first_name'],kwargs['ef_id'], kwargs['user']['id'], room)
-        return [str(self.room_members[room]['Board'])]
-
-    def multiplayer_t(self, *args, **kwargs):
-        room= self.create_room(kwargs['ef_id'], kwargs['type_chat'])
-        self.put_users(kwargs['user']['first_name'],kwargs['ef_id'], kwargs['user']['id'], room)
-        return ['Share this token with whoever you want to play', room]
-
-    def join_t(self, *args, **kwargs):
-        self.put_users(kwargs['user']['first_name'],kwargs['ef_id'], kwargs['user']['id'], kwargs['token'])
-        return ['Game started, Players: \n'+ self.room_members[kwargs['token']]['Board'].players[1][0] + " is white.\n" + self.room_members[kwargs['token']]['Board'].players[0][0] + ' is black']
-
-    def create_room(self, id, type_chat):
-        self.rooms_list.append('GC'+str(time.time()))
-#Board will later be the game object, Private is an option for when i wanna add a game queue, chat_id is the id of the chat that is later passed to the game,
-#Ids is a set of the ids of the players, essential to play through Chorichess without a group.
-        self.room_members[self.rooms_list[-1]]= {'Board':'', 'Players':[], 'Type': type_chat, 'chat_id': id, 'ids': set()}
-        return self.rooms_list[-1]
-
-    def put_users(self, username, sid, user_id, room):
-        try:
-            self.members[sid] == {}
-        except KeyError:
-            self.members[sid] = {}
-        self.members[sid][user_id]= []
-        self.members[sid][user_id].append(username)
-        self.members[sid][user_id].append(room)
-        self.room_members[room]['Players'].append([username, user_id])
-        self.room_members[room]['ids'].add(user_id)
-        if self.room_members[room]['Board'] == '':
-            self.room_members[room]['Board']= Game_Bot_Chess(self.room_members[room]['chat_id'], self.room_members[room]['Type'], self.telegrambot)
-        game = self.room_members[room]['Board']
-        game.add_player([username, user_id])
-        if len(self.room_members[room]['Players']) == 2:
-            game.startgame()
-        return room
-
-
-class Game_Bot_Chess(Game_Chess):
+class Game_P_Chess(Game_Chess):
     def __init__(self, n_id, type, telegrambot):
         super().__init__()
         #self.id is a var that saves the id of the chat it belongs, that way in case of mul_pieces, it can send a message so the player picks (it will only be used in group chats, in matches through Chorichess it isnt needed)
@@ -99,7 +47,7 @@ class Game_Bot_Chess(Game_Chess):
                 self.updater.bot.sendMessage(chat_id=self.id, text=msg)
             else:
                 self.updater.bot.sendMessage(chat_id=self.players[self.n_turn][1], text=msg)
-        return
+        return state
 
     def img_s(self):
         try:
@@ -155,3 +103,44 @@ class Game_Bot_Chess(Game_Chess):
         if self.players.index(resigner) == 0:
             self.winner=1
         return self.move_handler(3, "{} resigned, {} wins".format(resigner[0], self.players[self.winner][0]))
+
+class Game_Bot_Chess(Game_P_Chess):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.player_bot = ['StockFish {level}'.format(level= 20)]
+        self.add_player(self.player_bot)
+        self.stockfish= Bridge_Stock_Chess()
+    
+    def bot_move(self):
+        lm_piece = self.board.lm_piece
+        if self.players[self.turn] == self.player_bot:
+            if lm_piece == '':
+                movement_bot= self.stockfish.move()
+            else:
+                update= lm_piece.last_movement+lm_piece.position
+                self.stockfish.update_board(update)
+                movement_bot = self.stockfish.move()
+            print(movement_bot)
+            if movement_bot == 'e1h1' or movement_bot == 'e8h8':
+                movement= 'OO'
+            elif movement_bot == 'e1a1' or movement_bot == 'e8a8':
+                movement= 'OOO'
+            else:
+                piece_pos= movement_bot[0:2]
+                move= movement_bot[2:]
+                piece = self.board.table[piece_pos].type if self.board.table[piece_pos].name != 'Pawn' else ''
+                movement= piece+move
+            state = self.move(self.player_bot, movement)
+            if state != 0 or state != 4:
+                 self.stockfish.update_board(movement_bot)
+                 print('Bot made move ev. okay')
+        return
+        
+
+    def startgame(self):
+        super().startgame()
+        self.bot_move()
+
+    def move_handler(self, state, msg):
+        super().move_handler(state, msg)
+        self.bot_move()

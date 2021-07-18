@@ -13,7 +13,7 @@ class Board():
             Letter= chr(x+96)
             for i in range(1,9):
                 self.table[Letter + str(i)] = None
-        self.last_movement= ""
+        self.lm_piece= ""
         self.pieces = {}
         self.pieces[1] = {}
         self.pieces[0] = {}
@@ -143,7 +143,7 @@ class Piece():
         self.board.table[position] = self
         self.last_movement= self.position
         self.position = position
-        self.board.last_movement= self
+        self.board.lm_piece= self
 # #IMG STUFF
 #         self.board.c_img.paste(self.img, (128*(ord(position[0])-97), 128*(int(position[1])-1)), self.img)
 # # ------------
@@ -375,7 +375,7 @@ class Pawn(Piece):
     'B': Bishop
     }
     def check_pos(self):
-        self.av_moves= Pawn.al_forw[self.colour](self.position, self.board.table, self.board.last_movement)
+        self.av_moves= Pawn.al_forw[self.colour](self.position, self.board.table, self.board.lm_piece)
         re= self.av_moves[0]
         if self.av_moves[1] != "":
             re.append(self.av_moves[1][0])
@@ -455,10 +455,10 @@ class Game_Chess():
             self.game= 0
             if self.board.pieces[self.n_turn]['K'][0].position in [j for i in k_check.values() for j in i]:
                 self.winner= self.turn
-                return self.img_s(3, 'Checkmate, winner is '+str(self.players[self.winner]))
+                return self.move_handler(3, 'Checkmate, winner is '+str(self.players[self.winner]))
             else:
                 self.winner= 2
-                return self.img_s(3, 'Draw')
+                return self.move_handler(3, 'Draw')
         else:
             return None
 

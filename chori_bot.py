@@ -3,17 +3,23 @@ from telegram.ext.utils.promise import Promise
 from telegram.ext.dispatcher import run_async
 from config import Config
 import logging
-import time
-import telegram
 from pathlib import Path
 import os
-from chess_bot import Chess_Bot_Handler, Game_Bot_Chess
+from engine_logics.chess_s_manager import Chess_Bot_Handler
 
 updater = Updater(token=Config.TOKEN, use_context=True)
 dispatcher= updater.dispatcher
 
+def error_print(e):
+    print(e)
+dispatcher.add_error_handler(error_print)
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+#Logs
+try:
+    os.mkdir(Path('./logs'))
+except Exception:
+    pass
+logging.basicConfig(filename= './logs/log.log', filemode='a',  format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text='''
@@ -55,7 +61,8 @@ CBH= Chess_Bot_Handler(updater)
 chess_g_dict={
 'singleplayer': CBH.single_player_t,
 'invite': CBH.multiplayer_t,
-'join': CBH.join_t
+'join': CBH.join_t,
+'bot': CBH.bot_t,
 }
 
 def chess_g(update, context):

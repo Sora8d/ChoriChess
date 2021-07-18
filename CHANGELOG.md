@@ -1,3 +1,24 @@
+2.1 (18/07/2021):
+    Changes:
+    
+    1- Transformed the structure into packages. Further dividing files.
+    
+    2- Gamemode against a stockfish bot added.
+
+    3- Fixed logs, now basic logging is available. 
+
+    4- Modified config file to use environmental variables. 
+
+    modules added= stockfish, python-dotenv.
+
+    TODO:
+    -Fix promotions, right now doesnt work in any gamemode. 
+    -Test bot thoroughly,  specially promotions and castling.
+    -Add bot levels, different difficulties. 
+    -Fix test.py, create actual tests.
+    -Leave more comments.
+
+
 2.0 (15/07/2021):
     Changes:
 
