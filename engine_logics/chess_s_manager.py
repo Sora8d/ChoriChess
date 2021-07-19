@@ -7,6 +7,19 @@ import time
 
 #Games and saved stuff, for GROUP GAMES
 class Chess_Bot_Handler(ro_manager):
+    @staticmethod
+    def start_handler(game):
+        if len(game.players) == 2:
+            game.startgame()
+            return
+
+    @staticmethod
+    def import_game(game, fen_notation, player_and_turn_desired):
+        if player_and_turn_desired[1] == 'r':
+            player_and_turn_desired=False
+        game.import_board(fen_notation, player_and_turn_desired)
+        return
+
     def __init__(self, telegrambot):
         super().__init__()
         self.telegrambot = telegrambot
@@ -53,6 +66,5 @@ class Chess_Bot_Handler(ro_manager):
            self.room_members[room]['Board'] = self.type_games[bot_nobot](self.room_members[room]['chat_id'], self.room_members[room]['Type'], self.telegrambot)
         game = self.room_members[room]['Board']
         game.add_player([username, user_id])
-        if len(game.players) == 2:
-            game.startgame()
+        print(game.players)
         return room

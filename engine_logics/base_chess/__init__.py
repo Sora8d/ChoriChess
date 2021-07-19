@@ -101,7 +101,11 @@ class Board():
                 continue
             else:
                 for l in i:
-                    b_c= copy.deepcopy(self)
+                    try:
+                        b_c= copy.deepcopy(self)
+                    except Exception as e:
+                        print(e)
+                        break
                     b_c.promotion_choosing = lambda: 1
                     for t in b_c.pieces[turn][x]:
                         V= t.movement(l)
@@ -448,6 +452,7 @@ class King(Piece):
         return 0
 
 class Game_Chess():
+    turn_dict={'w': 1, 'b': 0}
     def __init__(self, promotion_func=cli_promotion, use_imgs=True):
         self.turn= 1
         self.n_turn= 0
@@ -456,17 +461,25 @@ class Game_Chess():
         self.game= 0
         self.winner= None
         self.use_imgs= use_imgs
+#Stuff about importing games
+        self.imported= False
+        self.player_and_turn_desired = None
 
     def add_player(self, player):
         if len(self.players) < 2:
             self.players.append(player)
         if len(self.players) == 2  and self.game == 0:
-            self.players= random.sample(self.players, 2)
-            print(self.players)
+            if self.imported:
+                player= self.player_and_turn_desired[0]
+                turn= self.__class__.turn_dict[self.player_and_turn_desired[1]]
+                if self.players[turn] != player:
+                    self.players[::-1]
+            else:
+                self.players= random.sample(self.players, 2)
 
-    def startgame(self, importing=False):
+    def startgame(self):
         self.game= 1
-        if not importing: self.board.set_up_start_pieces()
+        if not self.imported: self.board.set_up_start_pieces()
         self.move_handler(5,'Game Set Up')
 
     def endgame_check(self):
@@ -507,7 +520,9 @@ class Game_Chess():
         if self.players[self.turn] != player:
             return self.move_handler(4, "Its not your turn")
 #Pure the moves
+
         k_check= self.board.king_move_check(self.turn, self.n_turn)
+
 # This gives every value in k_check        [j for i in k_check.values() for j in i]
 
 #Castling
@@ -540,7 +555,6 @@ class Game_Chess():
                 game_over=self.endgame_check()
                 if game_over != None:
                     return game_over
-
                 self.turn_change()
                 return self.move_handler(1, self.board.table[move].name + " moved to " + move)
 #Makes player to choose between the pieces
@@ -597,12 +611,10 @@ class Game_Chess():
 
 #A function that serves the purpose of importing boards, now not every game needs to start from zero.
 #For now it will just get the turn and positions, later castling information will be added
-    def import_board(self, fen_notation):
+    def import_board(self, fen_notation, player_and_turn_desired):
         fen_notation= fen_notation.split(' ')
-        print(fen_notation)
         board= fen_notation[0]
-        imported_turn= 1 if fen_notation[1] == 'w' else 0
-        print(imported_turn)
+        imported_turn= self.__class__.turn_dict[fen_notation[1]]
         rows= board.split('/')[::-1]
         for x in range(len(rows)):
             spaces_blank_behind= 0
@@ -616,7 +628,9 @@ class Game_Chess():
                 importing_pieces_dict[piece.upper()](position, piece.isupper(), self.board)
         if imported_turn != self.turn:
             self.turn_change()
-        return self.startgame(importing=True)
+        self.imported = True
+        self.player_and_turn_desired = player_and_turn_desired
+        return
 
 
 importing_pieces_dict= {

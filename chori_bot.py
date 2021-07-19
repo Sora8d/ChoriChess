@@ -10,8 +10,8 @@ from engine_logics.chess_s_manager import Chess_Bot_Handler
 updater = Updater(token=Config.TOKEN, use_context=True)
 dispatcher= updater.dispatcher
 
-def error_print(e):
-    print(e)
+def error_print(e, a):
+    print(e, a)
 dispatcher.add_error_handler(error_print)
 
 #Logs
@@ -65,12 +65,12 @@ chess_g_dict={
 'bot': CBH.bot_t,
 }
 
-def chess_g(update, context):
-    action = context.args
+def master(update, context, action):
     #Sends the creation command to a dict that passes it to the proper handler object
     res= chess_g_dict[action[0]](user=update.message.from_user, token=action[-1], ef_id=update.effective_chat.id, type_chat=update.effective_chat.type)
     room= CBH.room_members[CBH.members[update.effective_chat.id][update.message.from_user['id']][1]]
     game= room['Board']
+    CBH.start_handler(game)
 #This checks who to send the starting message
     if action[0] != 'invite':
         game.move_handler(2, res[0])
@@ -80,9 +80,23 @@ def chess_g(update, context):
         print(game)
         context.bot.send_message(chat_id=update.effective_chat.id, text=res[1])
         context.bot.send_message(chat_id=update.effective_chat.id, text=res[0])
+    return game
+
+def chess_g(update, context):
+    master(update, context, context.args)
+    
 
 chess_g_handler= CommandHandler('c_n', chess_g)
 dispatcher.add_handler(chess_g_handler)
+
+def import_g(update, context):
+    game= master(update, context, context.args[2:4])
+    action= context.args
+    user_info= update.message.from_user
+    CBH.import_game(game, "{} {}".format(action[0], action[1]), [[user_info['first_name'], user_info['id']],action[3]])
+
+import_g_handler= CommandHandler('import', import_g)
+dispatcher.add_handler(import_g_handler)
 
 @run_async
 def move_g(update, context):
@@ -90,6 +104,7 @@ def move_g(update, context):
     print(CBH.members[update.effective_chat.id])
     room= CBH.room_members[CBH.members[update.effective_chat.id][update.message.from_user['id']][1]]
     game= room['Board']
+    print(game)
     res= game.move([update.message.from_user['first_name'], update.message.from_user['id']], action[0])
 
 move_g_handler= CommandHandler('move', move_g)
