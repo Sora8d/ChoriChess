@@ -1,25 +1,45 @@
 import copy, random
 from PIL import Image
 import PIL
+from pathlib import Path
 #TODO
 #Create check and checkmate
 #Create turns
 
-class Board():
+def cli_promotion():
+    print('What do you want this Pawn to be?')
+    selection= input('Q/B/N/R \n')
+    return selection
 
-    def __init__(self):
+
+
+class Board():
+    def __init__(self, promotion_choosing):
+        self.create_table()
+        self.create_pieces_dict()
+#Last moved piece
+        self.lm_piece= ""
+#Available moves
+        self.av_moves= []
+#Image of board
+        self.b_img= Image.open('images/tablero_{}.png'.format(random.randint(1,4)))
+        self.c_img=self.b_img.copy()
+#Method of promotion of pawns
+        self.promotion_choosing= promotion_choosing
+
+#Creates board dict
+    def create_table(self):
         self.table = {}
         for x in range(1,9):
             Letter= chr(x+96)
             for i in range(1,9):
                 self.table[Letter + str(i)] = None
-        self.lm_piece= ""
+#Creates pieces dict
+
+    def create_pieces_dict(self):
         self.pieces = {}
         self.pieces[1] = {}
         self.pieces[0] = {}
-        self.av_moves= []
-        self.b_img= Image.open('images/tablero_{}.png'.format(random.randint(1,4)))
-        self.c_img=self.b_img.copy()
         for x in range(0, 2):
             self.pieces[x]['P']= []
             self.pieces[x]['R']= []
@@ -27,31 +47,32 @@ class Board():
             self.pieces[x]['B']= []
             self.pieces[x]['Q'] = []
             self.pieces[x]['N'] = []
-    def set_up_game(self):
-#Setting Pawns
+
+    def set_up_start_pieces(self):
+#Setting Pawns. This and the other types of pieces are not appended anywhere cuz the Piece's classes append themselves, so this is a lil confusing.
         for x in range(1,9):
             Letter= chr(x+96)
-            pawnw=Pawn(Letter + str(2), 1, self, img=Image.open('images/peon.png'))
+            pawnw=Pawn(Letter + str(2), 1, self)
             # self.pieces[1]['P'].append(pawnw)
 
-            pawnb=Pawn(Letter + str(7), 0, self, img=Image.open('images/peon_b.png'))
+            pawnb=Pawn(Letter + str(7), 0, self)
             # self.pieces[0]['P'].append(pawnb)
 
 #Setting other pieces
         Pieces={
         1:{
-        'R': [Rook('a1', 1, self, img=Image.open('images/torre.png')), Rook('h1', 1, self, img=Image.open('images/torre.png'))],
-        'B': [Bishop('c1', 1, self, img=Image.open('images/alfil.png')), Bishop('f1', 1, self, img=Image.open('images/alfil.png'))],
-        'N': [Knight('b1', 1, self, img=Image.open('images/horse.png')), Knight('g1', 1, self, img=Image.open('images/horse.png'))],
-        'Q': [Queen('d1', 1,self, img=Image.open('images/queen.png'))],
-        'K': [King('e1', 1, self, img=Image.open('images/king.png'))]
+        'R': [Rook('a1', 1, self), Rook('h1', 1, self)],
+        'B': [Bishop('c1', 1, self), Bishop('f1', 1, self)],
+        'N': [Knight('b1', 1, self), Knight('g1', 1, self)],
+        'Q': [Queen('d1', 1,self)],
+        'K': [King('e1', 1, self)]
         },
         0:{
-        'R': [Rook('a8', 0, self, img=Image.open('images/torre_b.png')), Rook('h8', 0, self, img=Image.open('images/torre_b.png'))],
-        'B': [Bishop('c8', 0, self, img=Image.open('images/alfil_b.png')), Bishop('f8', 0, self, img=Image.open('images/alfil_b.png'))],
-        'N': [Knight('b8', 0, self, img=Image.open('images/horse_b.png')), Knight('g8', 0, self, img=Image.open('images/horse_b.png'))],
-        'Q': [Queen('d8', 0,self, img=Image.open('images/queen_b.png'))],
-        'K': [King('e8', 0, self, img=Image.open('images/king_b.png'))]
+        'R': [Rook('a8', 0, self), Rook('h8', 0, self)],
+        'B': [Bishop('c8', 0, self), Bishop('f8', 0, self)],
+        'N': [Knight('b8', 0, self), Knight('g8', 0, self)],
+        'Q': [Queen('d8', 0,self)],
+        'K': [King('e8', 0, self)]
         }
         }
         # for x, i in Pieces.items():
@@ -65,13 +86,13 @@ class Board():
                 all_moves[x].extend(p)
 #This returns a dict as {'P': [...], 'B': [...] etc}
         return all_moves
+
 #Creates a copy of the board, to check if any of the moves puts its own king in check
 #At first, this was supposed to return m_t_check without the check dangers, but for some reasons there are cases where
 #some movements are overlooked (try to get a checkmate, it wont happen). For further info check "BUG.txt"
 #So now instead of returning m_t_check, all the accepted movements are moved to a new dict, and that is returned
 #Now overlooked movements will not appear, but further testing will have to check if movements supposed to be avaiable are
 #also skipped, until now al ocurrences were under checkmate.
-
     def king_move_check(self, turn, e_turn):
         m_t_check=self.check_moves(turn)
         acc_moves= {}
@@ -81,6 +102,7 @@ class Board():
             else:
                 for l in i:
                     b_c= copy.deepcopy(self)
+                    b_c.promotion_choosing = lambda: 1
                     for t in b_c.pieces[turn][x]:
                         V= t.movement(l)
                         if V == 0:
@@ -95,21 +117,17 @@ class Board():
                             print(t.position)
                             print(l+ " presents a danger")
                             continue
- #                           m_t_check[x].remove(l)
                         else:
                             acc_moves.setdefault(x, [])
                             acc_moves[x].append(l)
         return acc_moves
-
-#    def move(self, piece_movement):
-
-
 
 
 #The mother-class piece
 class Piece():
     name=''
     type=''
+    default_img= {0:Image.open(Path('images/peon_b.png')), 1:Image.open(Path('images/peon.png'))}
     def __init__(self, position, colour, board, img=None):
         self.position= position
         self.colour= colour
@@ -117,17 +135,12 @@ class Piece():
         self.last_movement= None
         self.av_moves= []
 # IMG STUFF
-        self.img= img
+        self.img= self.__class__.default_img[colour] if img == None else img
+        self.img= self.img.convert('RGBA')
 # ------------
         self.board.table[position] = self
         self.board.pieces[self.colour][self.type].append(self)
-#IMG STUFF
-        if img == None:
-            if colour == 1:
-                self.img= Image.open('images/peon.png')
-            else:
-                self.img= Image.open('images/alfil.png')
-        self.img= self.img.convert('RGBA')
+
 # ------------
     def prrint(self):
         print(self.position)
@@ -144,15 +157,12 @@ class Piece():
         self.last_movement= self.position
         self.position = position
         self.board.lm_piece= self
-# #IMG STUFF
-#         self.board.c_img.paste(self.img, (128*(ord(position[0])-97), 128*(int(position[1])-1)), self.img)
-# # ------------
         return
 
 class Rook(Piece):
     name='Rook'
     type='R'
-
+    default_img= {0:Image.open(Path('images/torre_b.png')), 1:Image.open(Path('images/torre.png'))}
     def check_pos(self):
         c_checking= self.position
         v_moves= []
@@ -214,7 +224,7 @@ class Rook(Piece):
 class Bishop(Piece):
     name='Bishop'
     type='B'
-
+    default_img= {0:Image.open(Path('images/alfil_b.png')), 1:Image.open(Path('images/alfil.png'))}
 #New Method, check all available movements
     def check_pos(self):
         c_checking= self.position
@@ -279,7 +289,7 @@ class Bishop(Piece):
 class Knight(Piece):
     name= 'Knight'
     type= 'N'
-
+    default_img= {0:Image.open(Path('images/horse_b.png')), 1:Image.open(Path('images/horse.png'))}
     def check_pos(self):
         c_checking= self.position
         v_moves= []
@@ -300,6 +310,7 @@ class Knight(Piece):
                     pass
         self.av_moves = v_moves
         return self.av_moves
+
     def movement(self, position):
         if position in self.av_moves:
             super().movement(position)
@@ -307,8 +318,9 @@ class Knight(Piece):
         return 0
 
 class Queen(Bishop, Rook):
+    name= 'Queen'
     type= 'Q'
-
+    default_img= {0:Image.open(Path('images/queen_b.png')), 1:Image.open(Path('images/queen.png'))}
     def check_pos(self):
         Bishop.check_pos(self)
         B_moves= self.av_moves
@@ -316,9 +328,12 @@ class Queen(Bishop, Rook):
         self.av_moves.extend(B_moves)
         return self.av_moves
 
+
+
 class Pawn(Piece):
     name= 'Pawn'
     type= 'P'
+    default_img= {0:Image.open(Path('images/peon_b.png')), 1:Image.open(Path('images/peon.png'))}
 #The next 2 complex functions define the validity of a move in pawns
 #WARNING= Heavy use of if statements ahead
     @staticmethod
@@ -370,25 +385,24 @@ class Pawn(Piece):
     }
     promote= {
     'Q': Queen,
-    'K': Knight,
+    'N': Knight,
     'R': Rook,
     'B': Bishop
     }
+
     def check_pos(self):
         self.av_moves= Pawn.al_forw[self.colour](self.position, self.board.table, self.board.lm_piece)
         re= self.av_moves[0]
         if self.av_moves[1] != "":
             re.append(self.av_moves[1][0])
         return re
+
     def movement(self, position):
         if position in self.av_moves[0]:
             super().movement(position)
             if position[1] == '1' or position[1]== '8':
-                print('What do you want this Pawn to be?')
-                selection= input('Q/B/N/R \n')
-                self.board.pieces[self.colour][selection].append(Pawn.promote[selection](self.position, self.colour, self.board))
-                self.board.pieces[self.colour]['P'].remove(self)
-                return "You're now a " + selection
+                selection= self.board.promotion_choosing()
+                return self.promotion(selection)
             return 1
         try:
             if position in self.av_moves[1][0]:
@@ -398,9 +412,15 @@ class Pawn(Piece):
             pass
         return 0
 
+    def promotion(self, selection):
+        if selection != 1:        
+            self.board.pieces[self.colour][selection].append(self.promote[selection](self.position, self.colour, self.board))
+            self.board.pieces[self.colour]['P'].remove(self)
+        return 1
 class King(Piece):
     name= 'King'
     type= 'K'
+    default_img= {0:Image.open(Path('images/king_b.png')), 1:Image.open(Path('images/king.png'))}
     def check_pos(self):
         p_m= [1, -1]
         v_moves = []
@@ -428,24 +448,25 @@ class King(Piece):
         return 0
 
 class Game_Chess():
-    def __init__(self):
+    def __init__(self, promotion_func=cli_promotion, use_imgs=True):
         self.turn= 1
         self.n_turn= 0
-        self.board= Board()
+        self.board= Board(promotion_func)
         self.players= []
         self.game= 0
         self.winner= None
+        self.use_imgs= use_imgs
 
     def add_player(self, player):
         if len(self.players) < 2:
             self.players.append(player)
-            print(self.players)
         if len(self.players) == 2  and self.game == 0:
             self.players= random.sample(self.players, 2)
+            print(self.players)
 
-    def startgame(self):
+    def startgame(self, importing=False):
         self.game= 1
-        self.board.set_up_game()
+        if not importing: self.board.set_up_start_pieces()
         self.move_handler(5,'Game Set Up')
 
     def endgame_check(self):
@@ -464,7 +485,7 @@ class Game_Chess():
 
 
     def move_handler(self, state, msg):
-        if state != 0 and state != 4:
+        if state != 0 and state != 4 and self.use_imgs:
             self.img_s()
         return state, msg
 
@@ -573,3 +594,36 @@ class Game_Chess():
             return 0
         else:
             return quant[election]
+
+#A function that serves the purpose of importing boards, now not every game needs to start from zero.
+#For now it will just get the turn and positions, later castling information will be added
+    def import_board(self, fen_notation):
+        fen_notation= fen_notation.split(' ')
+        print(fen_notation)
+        board= fen_notation[0]
+        imported_turn= 1 if fen_notation[1] == 'w' else 0
+        print(imported_turn)
+        rows= board.split('/')[::-1]
+        for x in range(len(rows)):
+            spaces_blank_behind= 0
+            for i in range(len(rows[x])):
+                piece= rows[x][i]
+                if piece.isnumeric():
+                    spaces_blank_behind += int(piece)-1
+                    continue
+                correction= (i)+(spaces_blank_behind)
+                position= '{}{}'.format(chr(97+correction), x+1)
+                importing_pieces_dict[piece.upper()](position, piece.isupper(), self.board)
+        if imported_turn != self.turn:
+            self.turn_change()
+        return self.startgame(importing=True)
+
+
+importing_pieces_dict= {
+    'P': Pawn,
+    'B': Bishop,
+    'Q': Queen,
+    'K': King,
+    'R': Rook,
+    'N': Knight
+}

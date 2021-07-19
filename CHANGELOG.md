@@ -1,3 +1,10 @@
+2.2 (18/07/2021 23:00):
+    Changes:
+
+    1- Updated and fixed form of promoting. Have yet to test.
+
+    2- Added basic option to import boards, not in telegram games yet.
+    
 2.1 (18/07/2021):
     Changes:
     

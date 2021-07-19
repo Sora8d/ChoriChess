@@ -1,31 +1,37 @@
-from chess_bot_beta import Chess_Bot_Handler as CBHS
-from chess_bot_beta import Game_Bot_Chess as GBC
-import random
+from PIL import Image
+from engine_logics.base_chess import Game_Chess, Pawn
 
-CBH= CBHS()
-#Changes:
-#Changed room['Private'] for room['Type']
-def printwt(id, action):
-    print(id,' : ', action)
+tor = Game_Chess()
+tor.add_player('yo')
+tor.add_player('el')
+# tor.import_board('rnbqkbnr/pp1ppppp/8/2p5/P3P2P/7Q/PPPP1P2/RNBQKBNR w')
+# tor.move('yo', 'a4')
 
-players= {}
-def chess_test_s():
-    select= 'multiplayer'
-    players['Jhon']= random.randint(1000,9000)
-    players['Jhessica']= random.randint(1000,9000)
-    res = CBH.multiplayer_t(user={'first_name': 'Jhon', 'id':players['Jhon']}, ef_id=players['Jhon'], type_chat='private')
-    room= CBH.room_members[CBH.members[players['Jhon']][players['Jhon']][1]]
-    game= room['Board']
-#So this is so the game doesnt do anything stupid when playing in multiplayer.
-    if select=='multiplayer':
-        if room['Type']=='private':
-            printwt(room['Players'][0][1], res)
-        else:
-            print(res)
-    else:
-        if room['Type'] != 'private':
-            print(res)
-        else:
-            
-if __name__=='__main__':
-    chess_test_s()
+tor.import_board('rnbqkbnr/pp1ppppp/8/2p5/4P2P/7Q/PPPP1P2/RNBQKBNR w')
+
+print(tor.move('yo', 'a4'))
+print(tor.board.table)
+#tor.move(tor.players[1], 'a4')
+#tor.move(tor.players[0], 'b5')
+#tor.move(tor.players[1], 'b5')
+#tor.move(tor.players[0], 'a5')
+#tor.move(tor.players[1], 'b6')
+#tor.move(tor.players[0], 'a4')
+#tor.move(tor.players[1], 'b7')
+#tor.move(tor.players[0], 'a3')
+#tor.move(tor.players[1], 'a8')
+
+# def partial_try( game, object):
+#     print(game)
+#     print(object.presence)
+
+# class RTA():
+#     def __init__(self):
+#         partial_try_with_self= partial(partial_try, self)
+#         RDA(partial_try_with_self)
+# class RDA():
+#     presence="big"
+#     def __init__(self, func_to_test):
+#         func_to_test(self)
+
+# RTA()

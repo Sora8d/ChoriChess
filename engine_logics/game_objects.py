@@ -3,10 +3,34 @@ from engine_logics.stockfish_bot import Bridge_Stock_Chess
 import time
 import os
 from pathlib import Path
+from functools import partial
+
+def telegram_promotion(game):
+    text= 'Choose the piece you want the Pawn to promote to: \ņ/p Q/B/N/R'
+    if game.type != 'private':
+        game.updater.bot.sendMessage(chat_id=game.id, text=text)
+    else:
+        game.updater.bot.sendMessage(chat_id=game.players[game.turn][1], text=text)
+    t= 0
+    while game.response['selection'] == None and t < 60:
+        time.sleep(1)
+        t+=1
+    selection = game.response['selection']
+    game.response['selection'] = None
+    return selection
+
+def telegram_bot_promotion(game):
+    if game.players[game.turn] == game.player_bot:
+        selection = game.response['selection']
+        game.response['selection'] = None
+        return selection
+    else:
+        return telegram_promotion(game)
 
 class Game_P_Chess(Game_Chess):
-    def __init__(self, n_id, type, telegrambot):
-        super().__init__()
+    def __init__(self, n_id, type, telegrambot, promotion_func=telegram_promotion):
+        promotion_func_with_self= partial(promotion_func, self)
+        super().__init__(promotion_func=promotion_func_with_self)
         #self.id is a var that saves the id of the chat it belongs, that way in case of mul_pieces, it can send a message so the player picks (it will only be used in group chats, in matches through Chorichess it isnt needed)
         self.id= n_id
         self.type= type
@@ -105,7 +129,7 @@ class Game_P_Chess(Game_Chess):
         return self.move_handler(3, "{} resigned, {} wins".format(resigner[0], self.players[self.winner][0]))
 
 class Game_Bot_Chess(Game_P_Chess):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, promotion_func=telegram_bot_promotion, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.player_bot = ['StockFish {level}'.format(level= 20)]
         self.add_player(self.player_bot)
