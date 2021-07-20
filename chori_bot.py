@@ -70,30 +70,36 @@ def master(update, context, action):
     res= chess_g_dict[action[0]](user=update.message.from_user, token=action[-1], ef_id=update.effective_chat.id, type_chat=update.effective_chat.type)
     room= CBH.room_members[CBH.members[update.effective_chat.id][update.message.from_user['id']][1]]
     game= room['Board']
-    CBH.start_handler(game)
+    return game, res
+
 #This checks who to send the starting message
-    if action[0] != 'invite':
+def message(type, game, res, id, context):
+    print(type)
+    if type != 'invite':
         game.move_handler(2, res[0])
     else:
         #In multiplayer the game doesnt start inmediately, so it shouldnt send the board picture
         #Plus, it sends the invitation to the only person there
         print(game)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=res[1])
-        context.bot.send_message(chat_id=update.effective_chat.id, text=res[0])
+        context.bot.send_message(chat_id=id, text=res[1])
+        context.bot.send_message(chat_id=id, text=res[0])
     return game
 
 def chess_g(update, context):
-    master(update, context, context.args)
-    
+    game, res= master(update, context, context.args)
+    CBH.start_handler(game)
+    message(context.args[0], game, res, update.effective_chat.id, context)
 
 chess_g_handler= CommandHandler('c_n', chess_g)
 dispatcher.add_handler(chess_g_handler)
 
 def import_g(update, context):
-    game= master(update, context, context.args[2:4])
+    game, res= master(update, context, context.args[2:4])
     action= context.args
     user_info= update.message.from_user
     CBH.import_game(game, "{} {}".format(action[0], action[1]), [[user_info['first_name'], user_info['id']],action[3]])
+    CBH.start_handler(game)
+    message(context.args[2], game, res, update.effective_chat.id, context)
 
 import_g_handler= CommandHandler('import', import_g)
 dispatcher.add_handler(import_g_handler)

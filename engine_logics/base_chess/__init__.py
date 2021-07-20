@@ -11,7 +11,7 @@ def cli_promotion():
     selection= input('Q/B/N/R \n')
     return selection
 
-
+promotion_choose= []
 
 class Board():
     def __init__(self, promotion_choosing):
@@ -50,6 +50,7 @@ class Board():
 
     def set_up_start_pieces(self):
 #Setting Pawns. This and the other types of pieces are not appended anywhere cuz the Piece's classes append themselves, so this is a lil confusing.
+        print('is this happening?')
         for x in range(1,9):
             Letter= chr(x+96)
             pawnw=Pawn(Letter + str(2), 1, self)
@@ -96,6 +97,8 @@ class Board():
     def king_move_check(self, turn, e_turn):
         m_t_check=self.check_moves(turn)
         acc_moves= {}
+        promotion_choose.append(self.promotion_choosing)
+        self.promotion_choosing = lambda x: 1
         for x, i in m_t_check.items():
             if i == []:
                 continue
@@ -106,7 +109,6 @@ class Board():
                     except Exception as e:
                         print(e)
                         break
-                    b_c.promotion_choosing = lambda: 1
                     for t in b_c.pieces[turn][x]:
                         V= t.movement(l)
                         if V == 0:
@@ -124,6 +126,8 @@ class Board():
                         else:
                             acc_moves.setdefault(x, [])
                             acc_moves[x].append(l)
+        self.promotion_choosing = promotion_choose.pop()
+        print(self.promotion_choosing)
         return acc_moves
 
 
@@ -612,6 +616,7 @@ class Game_Chess():
 #A function that serves the purpose of importing boards, now not every game needs to start from zero.
 #For now it will just get the turn and positions, later castling information will be added
     def import_board(self, fen_notation, player_and_turn_desired):
+        print('YES')
         fen_notation= fen_notation.split(' ')
         board= fen_notation[0]
         imported_turn= self.__class__.turn_dict[fen_notation[1]]
