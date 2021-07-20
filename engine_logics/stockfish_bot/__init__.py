@@ -25,5 +25,8 @@ class Bridge_Stock_Chess():
 
     def move(self):
         b_move = self.stockfish.get_best_move_time(500)
-
         return b_move
+
+    def import_fen(self, fen_position):
+        self.stockfish.set_fen_position(fen_position)
+        print(self.stockfish.get_fen_position())

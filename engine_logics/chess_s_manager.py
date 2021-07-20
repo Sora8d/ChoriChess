@@ -66,5 +66,4 @@ class Chess_Bot_Handler(ro_manager):
            self.room_members[room]['Board'] = self.type_games[bot_nobot](self.room_members[room]['chat_id'], self.room_members[room]['Type'], self.telegrambot)
         game = self.room_members[room]['Board']
         game.add_player([username, user_id])
-        print(game.players)
         return room

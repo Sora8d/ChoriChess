@@ -7,8 +7,7 @@ from functools import partial
 
 class Game_P_Chess(Game_Chess):
     def __init__(self, n_id, type, telegrambot):
-        promotion_func_with_self= partial(self.telegram_promotion, self)
-        super().__init__(promotion_func=promotion_func_with_self)
+        super().__init__(promotion_func=self.telegram_promotion)
         #self.id is a var that saves the id of the chat it belongs, that way in case of mul_pieces, it can send a message so the player picks (it will only be used in group chats, in matches through Chorichess it isnt needed)
         self.id= n_id
         self.type= type
@@ -39,7 +38,6 @@ class Game_P_Chess(Game_Chess):
                     else:
                         self.updater.bot.sendMessage(chat_id=self.players[self.turn][1], text='Your turn!')
         elif state == 0:
-            print(msg)
             if self.type != 'private':
                 self.updater.bot.sendMessage(chat_id=self.id, text=msg)
             else:
@@ -99,7 +97,7 @@ class Game_P_Chess(Game_Chess):
         while self.response['selection'] == None and t < 60:
             time.sleep(1)
             t+=1
-        selection = self.response['selection']
+        selection = int(self.response['selection'])
         self.response['selection'] = None
         if type(selection) != int or len(quant)-1 < selection:
             return 0
@@ -107,7 +105,7 @@ class Game_P_Chess(Game_Chess):
         return mov
 
     def telegram_promotion(game):
-        text= 'Choose the piece you want the Pawn to promote to: \ņ/p Q/B/N/R'
+        text= 'Choose the piece you want the Pawn to promote to: /sel Q/B/N/R'
         if game.type != 'private':
             game.updater.bot.sendMessage(chat_id=game.id, text=text)
         else:
@@ -137,6 +135,7 @@ class Game_Bot_Chess(Game_P_Chess):
                 update= lm_piece.last_movement+lm_piece.position
                 self.stockfish.update_board(update)
                 movement_bot = self.stockfish.move()
+            
             print(movement_bot)
             if movement_bot == 'e1h1' or movement_bot == 'e8h8':
                 movement= 'OO'
@@ -148,9 +147,9 @@ class Game_Bot_Chess(Game_P_Chess):
                 piece = self.board.table[piece_pos].type if self.board.table[piece_pos].name != 'Pawn' else ''
                 movement= piece+move
             state = self.move(self.player_bot, movement)
+
             if state != 0 or state != 4:
                  self.stockfish.update_board(movement_bot)
-                 print('Bot made move ev. okay')
         return
         
 
@@ -161,6 +160,10 @@ class Game_Bot_Chess(Game_P_Chess):
     def move_handler(self, state, msg):
         super().move_handler(state, msg)
         self.bot_move()
+
+    def import_board(self, fen_notation, player_and_turn_desired):
+        self.stockfish.import_fen(fen_notation)
+        return super().import_board(fen_notation, player_and_turn_desired)
 
     def telegram_promotion(game):
         if game.players[game.turn] == game.player_bot:

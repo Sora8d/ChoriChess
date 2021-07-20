@@ -11,7 +11,7 @@ def cli_promotion():
     selection= input('Q/B/N/R \n')
     return selection
 
-promotion_choose= []
+promotion_choose= {}
 
 class Board():
     def __init__(self, promotion_choosing):
@@ -50,7 +50,6 @@ class Board():
 
     def set_up_start_pieces(self):
 #Setting Pawns. This and the other types of pieces are not appended anywhere cuz the Piece's classes append themselves, so this is a lil confusing.
-        print('is this happening?')
         for x in range(1,9):
             Letter= chr(x+96)
             pawnw=Pawn(Letter + str(2), 1, self)
@@ -97,36 +96,27 @@ class Board():
     def king_move_check(self, turn, e_turn):
         m_t_check=self.check_moves(turn)
         acc_moves= {}
-        promotion_choose.append(self.promotion_choosing)
-        self.promotion_choosing = lambda x: 1
+        promotion_choose[str(self.__class__)] = self.promotion_choosing
+        self.promotion_choosing = lambda: 1
         for x, i in m_t_check.items():
             if i == []:
                 continue
             else:
                 for l in i:
-                    try:
-                        b_c= copy.deepcopy(self)
-                    except Exception as e:
-                        print(e)
-                        break
+                    b_c= copy.deepcopy(self)
                     for t in b_c.pieces[turn][x]:
                         V= t.movement(l)
                         if V == 0:
                             continue
                         ene_check= []
 
-
                         [ene_check.extend(i) for (x,i) in b_c.check_moves(e_turn).items()]
-                        if l == 'b6' and x == 'P':
-                            print(ene_check)
                         if self.pieces[turn]['K'][0].position in ene_check or x == "K" and t.position in ene_check:
-                            print(t.position)
-                            print(l+ " presents a danger")
                             continue
                         else:
                             acc_moves.setdefault(x, [])
                             acc_moves[x].append(l)
-        self.promotion_choosing = promotion_choose.pop()
+        self.promotion_choosing = promotion_choose[str(self.__class__)]
         print(self.promotion_choosing)
         return acc_moves
 
@@ -409,7 +399,10 @@ class Pawn(Piece):
         if position in self.av_moves[0]:
             super().movement(position)
             if position[1] == '1' or position[1]== '8':
-                selection= self.board.promotion_choosing()
+                try:
+                    selection= self.board.promotion_choosing()
+                except Exception as e:
+                    print(e)
                 return self.promotion(selection)
             return 1
         try:
@@ -473,17 +466,11 @@ class Game_Chess():
         if len(self.players) < 2:
             self.players.append(player)
         if len(self.players) == 2  and self.game == 0:
-            if self.imported:
-                player= self.player_and_turn_desired[0]
-                turn= self.__class__.turn_dict[self.player_and_turn_desired[1]]
-                if self.players[turn] != player:
-                    self.players[::-1]
-            else:
-                self.players= random.sample(self.players, 2)
+            self.players= random.sample(self.players, 2)
 
     def startgame(self):
         self.game= 1
-        if not self.imported: self.board.set_up_start_pieces()
+        self.correct_playerturn() if self.imported else self.board.set_up_start_pieces()
         self.move_handler(5,'Game Set Up')
 
     def endgame_check(self):
@@ -616,7 +603,6 @@ class Game_Chess():
 #A function that serves the purpose of importing boards, now not every game needs to start from zero.
 #For now it will just get the turn and positions, later castling information will be added
     def import_board(self, fen_notation, player_and_turn_desired):
-        print('YES')
         fen_notation= fen_notation.split(' ')
         board= fen_notation[0]
         imported_turn= self.__class__.turn_dict[fen_notation[1]]
@@ -636,6 +622,12 @@ class Game_Chess():
         self.imported = True
         self.player_and_turn_desired = player_and_turn_desired
         return
+
+    def correct_playerturn(self):
+        player= self.player_and_turn_desired[0]
+        turn_desired= self.__class__.turn_dict[self.player_and_turn_desired[1]]
+        if self.players[turn_desired] != player:
+            self.players= self.players[::-1]
 
 
 importing_pieces_dict= {

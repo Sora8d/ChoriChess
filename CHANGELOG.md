@@ -1,3 +1,17 @@
+2.3 (20/07/2021 18:00):
+    Changes:
+
+    1- Fixed critical bug concerning promoting, going back to main branch.
+
+    2- Importing boards is now possible through FEN notation in telegram games and bot games.
+
+    3- Now that importing boards is possible, testing the bot in specific situations with bots is easier.
+
+    TODO:
+
+    - Make bots able to decide between multiple pieces and also to promote.
+    - Divide further the components.
+
 2.2 (18/07/2021 23:00):
     Changes:
 

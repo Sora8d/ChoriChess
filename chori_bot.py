@@ -10,8 +10,8 @@ from engine_logics.chess_s_manager import Chess_Bot_Handler
 updater = Updater(token=Config.TOKEN, use_context=True)
 dispatcher= updater.dispatcher
 
-def error_print(e, a):
-    print(e, a)
+def error_print(e, a, aa):
+    print(e, a, aa)
 dispatcher.add_error_handler(error_print)
 
 #Logs
@@ -74,13 +74,11 @@ def master(update, context, action):
 
 #This checks who to send the starting message
 def message(type, game, res, id, context):
-    print(type)
     if type != 'invite':
         game.move_handler(2, res[0])
     else:
         #In multiplayer the game doesnt start inmediately, so it shouldnt send the board picture
         #Plus, it sends the invitation to the only person there
-        print(game)
         context.bot.send_message(chat_id=id, text=res[1])
         context.bot.send_message(chat_id=id, text=res[0])
     return game
@@ -107,11 +105,10 @@ dispatcher.add_handler(import_g_handler)
 @run_async
 def move_g(update, context):
     action = context.args
-    print(CBH.members[update.effective_chat.id])
     room= CBH.room_members[CBH.members[update.effective_chat.id][update.message.from_user['id']][1]]
     game= room['Board']
-    print(game)
     res= game.move([update.message.from_user['first_name'], update.message.from_user['id']], action[0])
+
 
 move_g_handler= CommandHandler('move', move_g)
 dispatcher.add_handler(move_g_handler)
@@ -119,7 +116,7 @@ dispatcher.add_handler(move_g_handler)
 def choose_g(update, context):
     room= CBH.room_members[CBH.members[update.effective_chat.id][update.message.from_user['id']][1]]
     game= room['Board']
-    game.response['selection']= int(context.args[0])
+    game.response['selection']= context.args[0]
     return
 
 choose_g_handler= CommandHandler('sel', choose_g)
