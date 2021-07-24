@@ -1,3 +1,22 @@
+3.0 (23/07/2021 22:20):
+    Changes:
+
+    1- Bot is now able to promote and to choose between equal options
+
+    2- Bug encountered, Stockfish will get stuck if u put two pawns one move behind promotion. Need to get more testing.
+
+    3- Other bug. Stockfish 14 breaks with some imported boards. Need more testing, for now Stockfish 13 is being used. 
+
+    TODO:
+
+    1- Yet to test castling with bot.
+
+    2- When a game is over bot will start cycling, need to fix that.
+
+    3- Start adding some error handlers.
+
+    4- Start eliminating done games.
+
 2.3 (20/07/2021 18:00):
     Changes:
 

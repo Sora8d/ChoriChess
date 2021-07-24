@@ -5,3 +5,5 @@ venv/
 stockfish_14_linux_x64_bmi2/
 config.env
 logs/
+stockfishes/
+debug.py

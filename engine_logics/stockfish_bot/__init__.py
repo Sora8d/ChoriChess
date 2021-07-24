@@ -1,6 +1,5 @@
 from stockfish import Stockfish
 from config import Config
-
 #param = {
 #    "Write Debug Log": "false",
 #    "Contempt": 0,

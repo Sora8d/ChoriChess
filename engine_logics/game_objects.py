@@ -126,6 +126,18 @@ class Game_Bot_Chess(Game_P_Chess):
         self.add_player(self.player_bot)
         self.stockfish= Bridge_Stock_Chess()
     
+
+    def bot_position_and_piece(self, movement_bot):
+        if movement_bot == 'e1h1' or movement_bot == 'e8h8':
+            movement= 'OO'
+        elif movement_bot == 'e1a1' or movement_bot == 'e8a8':
+            movement= 'OOO'
+        else:
+            piece_pos= movement_bot[0:2]
+            move= movement_bot[2:]
+            piece = self.board.table[piece_pos].type if self.board.table[piece_pos].name != 'Pawn' else ''
+            movement= piece+move
+        return movement
     def bot_move(self):
         lm_piece = self.board.lm_piece
         if self.players[self.turn] == self.player_bot:
@@ -137,15 +149,11 @@ class Game_Bot_Chess(Game_P_Chess):
                 movement_bot = self.stockfish.move()
             
             print(movement_bot)
-            if movement_bot == 'e1h1' or movement_bot == 'e8h8':
-                movement= 'OO'
-            elif movement_bot == 'e1a1' or movement_bot == 'e8a8':
-                movement= 'OOO'
-            else:
-                piece_pos= movement_bot[0:2]
-                move= movement_bot[2:]
-                piece = self.board.table[piece_pos].type if self.board.table[piece_pos].name != 'Pawn' else ''
-                movement= piece+move
+            if len(movement_bot) > 4:
+                self.response['selection'] = movement_bot[-1].upper()
+            self.response['position'] = movement_bot[0:2]
+            movement= self.bot_position_and_piece(movement_bot[0:4])
+
             state = self.move(self.player_bot, movement)
 
             if state != 0 or state != 4:
@@ -164,6 +172,14 @@ class Game_Bot_Chess(Game_P_Chess):
     def import_board(self, fen_notation, player_and_turn_desired):
         self.stockfish.import_fen(fen_notation)
         return super().import_board(fen_notation, player_and_turn_desired)
+
+    def mul_pieces(self, quant):
+        if self.players[self.turn] == self.player_bot:
+            for x in range(len(quant)):
+                if self.response['position'] == quant[x].position:
+                    return quant[x]
+        else:
+            return self.super().mul_pieces(quant)
 
     def telegram_promotion(game):
         if game.players[game.turn] == game.player_bot:
