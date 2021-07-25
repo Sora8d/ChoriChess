@@ -1,3 +1,16 @@
+3.1 (24/07/2021 21:00):
+    Changes:
+
+    1- Correctly implemented Castling notation when importing games.
+
+    2- Further compartmentization of objects, now base chess has a sub-folder with the base board and pieces. 
+
+    TODO:
+
+    Everything of the 3.0 list.
+
+    + Finish adding en_peassant FEN notation
+
 3.0 (23/07/2021 22:20):
     Changes:
 

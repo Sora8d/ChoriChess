@@ -92,12 +92,12 @@ chess_g_handler= CommandHandler('c_n', chess_g)
 dispatcher.add_handler(chess_g_handler)
 
 def import_g(update, context):
-    game, res= master(update, context, context.args[2:4])
+    game, res= master(update, context, context.args[-2:])
     action= context.args
     user_info= update.message.from_user
-    CBH.import_game(game, "{} {}".format(action[0], action[1]), [[user_info['first_name'], user_info['id']],action[3]])
+    CBH.import_game(game, " ".join(action[0:-2]), [[user_info['first_name'], user_info['id']],action[-1]])
     CBH.start_handler(game)
-    message(context.args[2], game, res, update.effective_chat.id, context)
+    message(context.args[-2], game, res, update.effective_chat.id, context)
 
 import_g_handler= CommandHandler('import', import_g)
 dispatcher.add_handler(import_g_handler)
