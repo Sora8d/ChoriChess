@@ -1,3 +1,4 @@
+
 from engine_logics.base_chess import Game_Chess
 from engine_logics.stockfish_bot import Bridge_Stock_Chess
 import time
@@ -128,9 +129,9 @@ class Game_Bot_Chess(Game_P_Chess):
     
 
     def bot_position_and_piece(self, movement_bot):
-        if movement_bot == 'e1h1' or movement_bot == 'e8h8':
+        if movement_bot == 'e1g1' or movement_bot == 'e8g8':
             movement= 'OO'
-        elif movement_bot == 'e1a1' or movement_bot == 'e8a8':
+        elif movement_bot == 'e1c1' or movement_bot == 'e8c8':
             movement= 'OOO'
         else:
             piece_pos= movement_bot[0:2]
@@ -163,11 +164,11 @@ class Game_Bot_Chess(Game_P_Chess):
 
     def startgame(self):
         super().startgame()
-        self.bot_move()
 
     def move_handler(self, state, msg):
         super().move_handler(state, msg)
-        self.bot_move()
+        if state != 0 and state !=4 and state !=3:
+            self.bot_move()
 
     def import_board(self, fen_notation, player_and_turn_desired):
         self.stockfish.import_fen(fen_notation)
@@ -179,7 +180,8 @@ class Game_Bot_Chess(Game_P_Chess):
                 if self.response['position'] == quant[x].position:
                     return quant[x]
         else:
-            return self.super().mul_pieces(quant)
+            return super().mul_pieces(quant)
+
 
     def telegram_promotion(game):
         if game.players[game.turn] == game.player_bot:
@@ -187,4 +189,4 @@ class Game_Bot_Chess(Game_P_Chess):
             game.response['selection'] = None
             return selection
         else:
-            return game.super().telegram_promotion(game)
+            return super().telegram_promotion(game)

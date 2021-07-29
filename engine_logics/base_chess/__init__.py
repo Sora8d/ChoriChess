@@ -1,3 +1,4 @@
+from debug import func_info
 import random
 from PIL import Image
 from pathlib import Path
@@ -68,7 +69,6 @@ class Game_Chess():
         self.board.c_img.show()
         return
 
-
     def move(self, player, move):
         if self.game == 0:
             return self.move_handler(0, "Game Over")
@@ -127,30 +127,31 @@ class Game_Chess():
         return self.move_handler(0, "No valid movement")
 
     def castle(self, move):
-        numbah= self.board.pieces[self.turn]['K'][0].position[1]
+        _numbah= {1: '1', 0: '8'}[self.turn]
         if self.board.pieces[self.turn]['K'][0].last_movement == None:
+            _rooks_atc= []
+            for x in self.board.pieces[self.turn]['R']:
+                if x.last_movement == None:
+                    _rooks_atc.append(x)
             if move == 'OO':
-                if self.board.pieces[self.turn]['R'][1].last_movement == None:
-                    if self.board.table['f'+numbah] == None and self.board.table['g'+numbah] == None:
-                        moves= self.board.check_moves(self.n_turn)
-                        if 'f'+numbah not in moves and 'g'+numbah not in moves:
-                            self.board.pieces[self.turn]['K'][0].av_moves.append('g'+numbah)
-                            self.board.pieces[self.turn]['R'][1].av_moves.append('f'+numbah)
-                            self.board.pieces[self.turn]['K'][0].movement('g'+numbah)
-                            self.board.pieces[self.turn]['R'][1].movement('f'+numbah)
-                            return 1
+                for x in _rooks_atc:
+                    if x.position == 'h'+_numbah:
+                        self.board.pieces[self.turn]['K'][0].av_moves.append('g'+_numbah)
+                        x.av_moves.append('f'+_numbah)
+                        self.board.pieces[self.turn]['K'][0].movement('g'+_numbah)
+                        x.movement('f'+_numbah)
+                        return 1
 
             elif move == 'OOO':
-                if self.board.pieces[self.turn]['R'][0].last_movement == None:
-                    if self.board.table['d'+numbah] == None and self.board.table['c'+numbah] == None and self.board.table['b'+numbah] == None:
-                        moves= self.board.check_moves(self.n_turn)
-                        if 'd'+numbah not in moves and 'c'+numbah not in moves and 'b'+numbah not in moves:
-                            self.board.pieces[self.turn]['K'][0].av_moves.append('c'+numbah)
-                            self.board.pieces[self.turn]['R'][0].av_moves.append('d'+numbah)
-                            self.board.pieces[self.turn]['K'][0].movement('c'+numbah)
-                            self.board.pieces[self.turn]['R'][0].movement('d'+numbah)
-                            return 1
+                for x in _rooks_atc:
+                    if x.position == 'a'+_numbah:
+                        self.board.pieces[self.turn]['K'][0].av_moves.append('c'+_numbah)
+                        x.av_moves.append('d'+_numbah)
+                        self.board.pieces[self.turn]['K'][0].movement('c'+_numbah)
+                        x.movement('d'+_numbah)
+                        return 1
         return 0
+
 
     def turn_change(self):
         self.turn, self.n_turn = self.n_turn, self.turn
@@ -203,27 +204,39 @@ class Game_Chess():
         #but 0 is black in the pieces.
         _qk_dict= {'K': 1, 'Q': 0}
         _qk_reference= 'KQkq'
+        _ref_to_rook= {'K': 'h1', 'k': 'h8', 'Q': 'a1', 'q': 'a8'}
         if _notation == '-':
             self.board.pieces[1]['K'][0].last_movement= 'e1'
             self.board.pieces[0]['K'][0].last_movement= 'e1'
         else:
-            _missing_castles= []
-            for x in _qk_reference:
-                if x not in _notation:
-                    _missing_castles.append(x)
-            for x in _missing_castles:
-                self.board.pieces[x.isupper()]['R'][_qk_dict[x.upper()]].last_movement = 'e1'
+            _castle_allowed= []
+            for x in self.board.pieces[1]['R']+self.board.pieces[0]['R']:
+                for i in _notation:
+                    if x.position == _ref_to_rook[i]:
+                        x.last_movement= None
+                        _castle_allowed.append(x)
+                    elif x not in _castle_allowed:
+                        x.last_movement= 'e1'
 
-            
+        #else:
+        #    _missing_castles= []
+        #    for x in _qk_reference:
+        #        if x not in _notation:
+        #            _missing_castles.append(x)
+        #    for x in _missing_castles:
+        #        self.board.pieces[x.isupper()]['R'][_qk_dict[x.upper()]].last_movement = 'e1'
+
+    @func_info
     def FEN_en_peassant_implementation(self, _notation):
-        #if _notation == '-':
-        #    pass
-        #_en_peassant_dict= {'3': ['2', '4'], '6': ['7', '5']}
-        #_en_p_selection= _en_peassant_dict[_notation[1]]
-        #_piece= self.board.table[_notation[0]+_en_p_selection[1]]
-        #_last_movement= _notation[0]+_en_p_selection[0]
-        #self.board.lm_piece= _piece
-        #_piece.last_movement= _last_movement
+        if _notation == '-':
+           return
+        self.board.en_peassant = _notation
+        _en_peassant_dict= {'3': ['2', '4'], '6': ['7', '5']}
+        _en_p_selection= _en_peassant_dict[_notation[1]]
+        _piece= self.board.table[_notation[0]+_en_p_selection[1]]
+        _last_movement= _notation[0]+_en_p_selection[0]
+        self.board.lm_piece= _piece
+        _piece.last_movement= _last_movement
         pass
         
 #Corrects when importing a game that white and black players are correct.

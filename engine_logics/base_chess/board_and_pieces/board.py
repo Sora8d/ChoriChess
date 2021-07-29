@@ -3,7 +3,6 @@ from PIL import Image
 from pathlib import Path
 from engine_logics.base_chess.board_and_pieces.pieces import Pawn, Rook, King, Bishop, Queen, Knight
 
-
 promotion_choose= {}
 
 class Board():
@@ -20,6 +19,7 @@ class Board():
 #Method of promotion of pawns
         self.promotion_choosing= promotion_choosing
 
+        self.en_peassant= False
 #Creates board dict
     def create_table(self):
         self.table = {}

@@ -1,3 +1,22 @@
+3.2 (28/07/2021):
+    Changes:
+
+    1- Changed the function that checks Pawns movement.
+    2- Change way en_peassant works, now its a variable in the Board object, before it was checked in the movement_checker of Pawns.
+    3- Changed way of FEN Castling.
+    4- Changed way Castling works in the Game_Chess object.  
+    5- Made it able to add en_peassant FEN notations
+    6- Tested castling with bots, works.
+    7- Now bots dont enter a bucle when game ends.
+
+    TODO:
+
+    1- Fix multiple IMGS at end of games. 
+
+    2- Still have to add error handlers.
+
+    3- Still need a way of erasing data after games are done.
+
 3.1 (24/07/2021 21:00):
     Changes:
 
