@@ -8,6 +8,19 @@ from functools import partial
 
 Game_Handlers= {}
 
+def response_wait(game, text):
+    if game.type != 'private':
+        game.updater.bot.sendMessage(chat_id=game.id, text=text)
+    else:
+        game.updater.bot.sendMessage(chat_id=game.players[game.turn][1], text=text)
+    t= 0
+    while game.response['selection'] == None and t < 60:
+        time.sleep(1)
+        t+=1
+    selection = game.response['selection']
+    game.response['selection'] = None
+    return selection
+
 class Game_P_Chess(Game_Chess):
     def __init__(self, n_id, type, telegrambot):
         super().__init__(promotion_func=self.telegram_promotion)
@@ -92,33 +105,15 @@ class Game_P_Chess(Game_Chess):
         for x in range(len(quant)):
             text+=str(x)+': '+ quant[x].type + ' in ' +quant[x].position+'\n'
         text += 'Input /sel followed by the number of the piece u want to move'
-        if self.type != 'private':
-            self.updater.bot.sendMessage(chat_id=self.id, text=text)
-        else:
-            self.updater.bot.sendMessage(chat_id=self.players[self.turn][1], text=text)
-        t= 0
-        while self.response['selection'] == None and t < 60:
-            time.sleep(1)
-            t+=1
-        selection = int(self.response['selection'])
-        self.response['selection'] = None
+        selection= int(response_wait(self, text))
         if type(selection) != int or len(quant)-1 < selection:
             return 0
         mov= quant[selection]
         return mov
 
-    def telegram_promotion(game):
+    def telegram_promotion(self):
         text= 'Choose the piece you want the Pawn to promote to: /sel Q/B/N/R'
-        if game.type != 'private':
-            game.updater.bot.sendMessage(chat_id=game.id, text=text)
-        else:
-            game.updater.bot.sendMessage(chat_id=game.players[game.turn][1], text=text)
-        t= 0
-        while game.response['selection'] == None and t < 60:
-            time.sleep(1)
-            t+=1
-        selection = game.response['selection']
-        game.response['selection'] = None
+        selection= response_wait(self, text)
         return selection
 
 

@@ -39,7 +39,11 @@ class Chess_Bot_Handler(ro_manager):
         return ['Share this token with whoever you want to play', room]
 
     def join_t(self, *args, **kwargs):
-        self.put_users(kwargs['user']['first_name'],kwargs['ef_id'], kwargs['user']['id'], kwargs['token'], 0)
+        try:
+            self.put_users(kwargs['user']['first_name'],kwargs['ef_id'], kwargs['user']['id'], kwargs['token'], 0)
+        except KeyError as e:
+            self.telegrambot.bot.sendMessage(chat_id=kwargs['ef_id'], text='Game not found')
+            raise e
         return ['Game started, Players: \n'+ self.room_members[kwargs['token']]['Board'].players[1][0] + " is white.\n" + self.room_members[kwargs['token']]['Board'].players[0][0] + ' is black']
 
     def bot_t(self, *args, **kwargs):

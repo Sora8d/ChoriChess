@@ -1,3 +1,20 @@
+3.3.1 (08/08/2021):
+    Changes:
+
+    1- Added some Error Handlers regarding not being in a game and inserting a wrong token.
+
+    2- Combined every function that has to do with Response into response_wait.
+
+    TODO:
+
+    1- Add the remaining Error Handlers.
+
+    2- Implement a Database.
+
+    3- Make players able to have more than one game active through Chorichess.
+
+    4- NEW BUG: When in Check, King is unable to move, need to fix.
+
 3.3 (08/08/2021):
     Changes:
 

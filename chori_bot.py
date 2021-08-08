@@ -1,4 +1,3 @@
-from debug import func_info
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.ext.utils.promise import Promise
 from telegram.ext.dispatcher import run_async
@@ -77,7 +76,7 @@ def master(update, context, action):
     return game, res
 
 #This checks who to send the starting message
-def message(type, game, res, id, context):
+def messagegames(type, game, res, id, context):
     if type != 'invite':
         game.move_handler(2, res[0])
     else:
@@ -93,7 +92,7 @@ def message(type, game, res, id, context):
 def chess_g(update, context):
     game, res= master(update, context, context.args)
     CBH.start_handler(game)
-    message(context.args[0], game, res, update.effective_chat.id, context)
+    messagegames(context.args[0], game, res, update.effective_chat.id, context)
 
 chess_g_handler= CommandHandler('c_n', chess_g)
 dispatcher.add_handler(chess_g_handler)
@@ -104,7 +103,7 @@ def import_g(update, context):
     user_info= update.message.from_user
     CBH.import_game(game, " ".join(action[0:-2]), [[user_info['first_name'], user_info['id']],action[-1]])
     CBH.start_handler(game)
-    message(context.args[-2], game, res, update.effective_chat.id, context)
+    messagegames(context.args[-2], game, res, update.effective_chat.id, context)
 
 import_g_handler= CommandHandler('import', import_g)
 dispatcher.add_handler(import_g_handler)
@@ -112,7 +111,11 @@ dispatcher.add_handler(import_g_handler)
 @run_async
 def move_g(update, context):
     action = context.args
-    room= CBH.room_members[CBH.members[update.effective_chat.id][update.message.from_user['id']][1]]
+    try:
+        room= CBH.room_members[CBH.members[update.effective_chat.id][update.message.from_user['id']][1]]
+    except KeyError as e:
+        context.bot.send_message(chat_id=update.effective_chat.id, text='You are not playing any games in this chat')
+        raise e
     game= room['Board']
     res= game.move([update.message.from_user['first_name'], update.message.from_user['id']], action[0])
 

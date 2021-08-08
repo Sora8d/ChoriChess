@@ -23,7 +23,7 @@ class Bridge_Stock_Chess():
         self.stockfish.make_moves_from_current_position([input])
 
     def move(self):
-        b_move = self.stockfish.get_best_move_time(500)
+        b_move = self.stockfish.get_best_move_time(1000)
         return b_move
 
     def import_fen(self, fen_position):
