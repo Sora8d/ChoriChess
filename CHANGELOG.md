@@ -1,3 +1,15 @@
+3.3 (08/08/2021):
+    Changes:
+
+    1- Implemented a delete_room function in the manager, and managed to implement it in Chess_P and Chess_Bot games. Now finished games will be deleted.
+    2- Substituted a piece of the code in the img_s of Chess_P, now when not playing a private match (where you have two images for black and white players), it uses a list comprehension insted of nested loops.
+
+    TODO:
+
+    1- Add Error Handlers.
+
+    2- Implement a Database.
+
 3.2 (28/07/2021):
     Changes:
 

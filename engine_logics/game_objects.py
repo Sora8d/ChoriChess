@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 from functools import partial
 
+Game_Handlers= {}
+
 class Game_P_Chess(Game_Chess):
     def __init__(self, n_id, type, telegrambot):
         super().__init__(promotion_func=self.telegram_promotion)
@@ -48,6 +50,9 @@ class Game_P_Chess(Game_Chess):
                 self.updater.bot.sendMessage(chat_id=self.id, text=msg)
             else:
                 self.updater.bot.sendMessage(chat_id=self.players[self.n_turn][1], text=msg)
+        
+        if state == 3:
+            Game_Handlers[1](self.id, self.players)
         return state
 
     def img_s(self):
@@ -59,10 +64,7 @@ class Game_P_Chess(Game_Chess):
         self.board.c_img = self.board.b_img.copy()
 #This is just one board, with white on bottom. 
         if self.type != 'private':
-            for x in self.board.pieces:
-                for i in self.board.pieces[x]:
-                    for z in self.board.pieces[x][i]:
-                        self.board.c_img.paste(z.img, (128*(ord(z.position[0])-97), 128*(invert_n[int(z.position[1])-1])), z.img)
+            [self.board.c_img.paste(z.img, (128*(ord(z.position[0])-97), 128*(invert_n[int(z.position[1])-1])), z.img) for x in self.board.pieces for i in self.board.pieces[x] for z in self.board.pieces[x][i]]
             self.board.c_img.save(Path('b_imgs/{}/c_move.png'.format(self.id)))
 #Creates custom boards for black and white players.
         elif self.type == 'private':
@@ -139,6 +141,7 @@ class Game_Bot_Chess(Game_P_Chess):
             piece = self.board.table[piece_pos].type if self.board.table[piece_pos].name != 'Pawn' else ''
             movement= piece+move
         return movement
+
     def bot_move(self):
         lm_piece = self.board.lm_piece
         if self.players[self.turn] == self.player_bot:
@@ -166,9 +169,10 @@ class Game_Bot_Chess(Game_P_Chess):
         super().startgame()
 
     def move_handler(self, state, msg):
-        super().move_handler(state, msg)
+        _s= super().move_handler(state, msg)
         if state != 0 and state !=4 and state !=3:
             self.bot_move()
+        return _s 
 
     def import_board(self, fen_notation, player_and_turn_desired):
         self.stockfish.import_fen(fen_notation)

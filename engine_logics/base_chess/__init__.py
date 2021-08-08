@@ -1,12 +1,10 @@
-from debug import func_info
+
 import random
 from PIL import Image
 from pathlib import Path
 from engine_logics.base_chess.board_and_pieces import board, pieces
 
-#TODO
-#Create check and checkmate
-#Create turns
+
 
 def cli_promotion():
     print('What do you want this Pawn to be?')
@@ -226,7 +224,7 @@ class Game_Chess():
         #    for x in _missing_castles:
         #        self.board.pieces[x.isupper()]['R'][_qk_dict[x.upper()]].last_movement = 'e1'
 
-    @func_info
+
     def FEN_en_peassant_implementation(self, _notation):
         if _notation == '-':
            return

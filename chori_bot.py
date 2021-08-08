@@ -1,3 +1,4 @@
+from debug import func_info
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.ext.utils.promise import Promise
 from telegram.ext.dispatcher import run_async
@@ -6,6 +7,8 @@ import logging
 from pathlib import Path
 import os
 from engine_logics.chess_s_manager import Chess_Bot_Handler
+from engine_logics.game_objects import Game_Handlers
+from shutil import rmtree
 
 updater = Updater(token=Config.TOKEN, use_context=True)
 dispatcher= updater.dispatcher
@@ -64,6 +67,7 @@ chess_g_dict={
 'join': CBH.join_t,
 'bot': CBH.bot_t,
 }
+Game_Handlers[1]= CBH
 
 def master(update, context, action):
     #Sends the creation command to a dict that passes it to the proper handler object
@@ -82,6 +86,9 @@ def message(type, game, res, id, context):
         context.bot.send_message(chat_id=id, text=res[1])
         context.bot.send_message(chat_id=id, text=res[0])
     return game
+
+
+
 
 def chess_g(update, context):
     game, res= master(update, context, context.args)

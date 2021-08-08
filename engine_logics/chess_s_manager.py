@@ -1,3 +1,5 @@
+from pathlib import Path
+from shutil import rmtree
 from engine_logics.game_objects import Game_P_Chess, Game_Bot_Chess
 from engine_logics.session_manager import ro_manager
 import time
@@ -46,11 +48,11 @@ class Chess_Bot_Handler(ro_manager):
         return [str(self.room_members[room]['Board'])]
 
     def create_room(self, id, type_chat):
-        self.rooms_list.append('GC'+str(time.time()))
+        token='GC'+str(time.time())
 #Board will later be the game object, Private is an option for when i wanna add a game queue, chat_id is the id of the chat that is later passed to the game,
 #Ids is a set of the ids of the players, essential to play through Chorichess without a group.
-        self.room_members[self.rooms_list[-1]]= {'Board':'', 'Players':[], 'Type': type_chat, 'chat_id': id, 'ids': set()}
-        return self.rooms_list[-1]
+        self.room_members[token]= {'Board':'', 'Players':[], 'Type': type_chat, 'chat_id': id, 'ids': set()}
+        return token
 
     def put_users(self, username, sid, user_id, room, bot_nobot):
         try:
@@ -67,3 +69,15 @@ class Chess_Bot_Handler(ro_manager):
         game = self.room_members[room]['Board']
         game.add_player([username, user_id])
         return room
+
+    def delete_room(self, gameid, playersid):
+        for x in playersid:
+            try:
+                self.room_members.pop(self.members[gameid].pop(x[1])[1])
+                print('got one')
+            except (IndexError, KeyError):
+                continue
+        if self.members[gameid] == {}:
+            self.members.pop(gameid)
+        rmtree(Path('./b_imgs/{}'.format(gameid)))
+        pass
