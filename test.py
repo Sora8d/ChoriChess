@@ -1,32 +1,31 @@
 from PIL import Image
 from engine_logics.base_chess import Game_Chess
 import time
-#tor = Game_Chess()
-#tor.add_player('yo')
-#tor.add_player('el')
-#tor.import_board('rnbqkbnr/p1pppppp/8/1pP5/8/8/PPPPPPPP/R3KBNR w KQkq b6', ['yo', 'w'])
-#tor.startgame()
-#time.sleep(2)
-#tor.move(tor.players[1], 'b6')
-#
-#for x in tor.board.pieces[0]['P']:
-#    print(x.position)
-#for x in tor.board.pieces[1]['P']:
-#    print(x.position)
+from debug import func_info
+desired_input= ""
+def mock_input(input_func):
+    def input_values(*args, **kwargs):
+        return args[0][desired_input]
+    return input_values
+    
+        
 
-from stockfish import Stockfish
-from config import Config
+tor = Game_Chess()
+tor.mul_pieces= mock_input(tor.mul_pieces)
+tor.add_player('yo')
+tor.add_player('el')
+tor.import_board("k6r/7p/8/8/8/8/K7/R6R w - -", ['yo', 'w'])
+tor.startgame()
+tor.board.king_move_check= func_info(tor.board.king_move_check)
+desired_input= 1
+tor.move('yo', 'Rb1')
+tor.move('el', 'Rc8')
+tor.move('yo', 'Rb5')
+tor.move('el', 'Rc2')
+print(tor.board.pieces)
 
-stocky= Stockfish(Config.STOCKFISH)
-stocky.set_skill_level(1)
-print(stocky._parameters)
-stocky.set_skill_level(5)
-print(stocky._parameters)
-stocky.set_skill_level(10)
-print(stocky._parameters)
-stocky.set_skill_level(15)
-print(stocky._parameters)
-stocky.set_skill_level(20)
-print(stocky._parameters)
+
+
+#tor.move('yo', 'Kb1')
 #for castling tests.
 #/import r3k3/8/8/8/8/8/2P1P3/2RKR3 b q -

@@ -65,7 +65,7 @@ class Game_P_Chess(Game_Chess):
                 self.updater.bot.sendMessage(chat_id=self.players[self.n_turn][1], text=msg)
         
         if state == 3:
-            Game_Handlers[1](self.id, self.players)
+            Game_Handlers[1].delete_room(self.id, self.players)
         return state
 
     def img_s(self):

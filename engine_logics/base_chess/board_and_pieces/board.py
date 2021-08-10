@@ -91,24 +91,22 @@ class Board():
         acc_moves= {}
         promotion_choose[str(self.__class__)] = self.promotion_choosing
         self.promotion_choosing = lambda: 1
-        for x, i in m_t_check.items():
-            if i == []:
+        for _pieceName, _movetoCheck in m_t_check.items():
+            if _movetoCheck == []:
                 continue
             else:
-                for l in i:
+                for l in _movetoCheck:
                     b_c= copy.deepcopy(self)
-                    for t in b_c.pieces[turn][x]:
+                    for t in b_c.pieces[turn][_pieceName]:
                         V= t.movement(l)
                         if V == 0:
                             continue
                         ene_check= []
-
-                        [ene_check.extend(i) for (x,i) in b_c.check_moves(e_turn).items()]
-                        if self.pieces[turn]['K'][0].position in ene_check or x == "K" and t.position in ene_check:
+                        [ene_check.extend(_enemyMovements) for (v,_enemyMovements) in b_c.check_moves(e_turn).items()]
+                        if b_c.pieces[turn]['K'][0].position in ene_check or (_pieceName == "K" and t.position in ene_check):
                             continue
                         else:
-                            acc_moves.setdefault(x, [])
-                            acc_moves[x].append(l)
+                            acc_moves.setdefault(_pieceName, [])
+                            acc_moves[_pieceName].append(l)
         self.promotion_choosing = promotion_choose[str(self.__class__)]
-        print(self.promotion_choosing)
         return acc_moves

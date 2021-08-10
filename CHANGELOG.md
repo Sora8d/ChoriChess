@@ -1,3 +1,8 @@
+3.3.2 (09/09/2021):
+    Changes:
+    
+    1- Fixed King bug, also fixed another bug that made the bot incapable of deleting finished games.
+
 3.3.1 (08/08/2021):
     Changes:
 
