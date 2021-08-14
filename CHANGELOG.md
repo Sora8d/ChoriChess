@@ -1,3 +1,18 @@
+3.4 (13/08/2021):
+    Changes:
+
+    1- Added a lot of ways to handle errors, including 2 herror_handlers funcions for importing, and a custom Exception class inside Game_P_Chess object.
+
+    2- Added a Database system, for now it keeps track of players, giving them the possibility to change usernames.
+
+    3- chori_bot now only activates the functions that are inside chori_bot_logics
+
+    TODO:
+
+    1- Make players able to have more than one active game per chat.
+
+    2- Create Game table.
+
 3.3.2 (09/09/2021):
     Changes:
     

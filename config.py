@@ -7,3 +7,4 @@ load_dotenv(Path('./config.env'))
 class Config():
     TOKEN= os.getenv('TOKEN')
     STOCKFISH= os.getenv('STOCKFPATH')
+    DATABASE= os.getenv('DATABASE')

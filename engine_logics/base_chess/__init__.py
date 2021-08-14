@@ -1,9 +1,9 @@
 
+from engine_logics.errors.chess_errors_handler import Error_handler_notation_general, Error_handler_pieces_implementation
 import random
 from PIL import Image
 from pathlib import Path
 from engine_logics.base_chess.board_and_pieces import board, pieces
-
 
 
 def cli_promotion():
@@ -17,7 +17,7 @@ class Game_Chess():
         self.turn= 1
         self.n_turn= 0
         self.board= board.Board(promotion_func)
-        self.players= []
+        self.players= {'list': []}
         self.game= 0
         self.winner= None
         self.use_imgs= use_imgs
@@ -25,15 +25,22 @@ class Game_Chess():
         self.imported= False
         self.player_and_turn_desired = None
 
+        self.create_exceptions()
+
+    def create_exceptions(self):
+        self.error= ValueError
+
     def add_player(self, player):
-        if len(self.players) < 2:
-            self.players.append(player)
-        if len(self.players) == 2  and self.game == 0:
-            self.players= random.sample(self.players, 2)
+        if len(self.players['list']) < 2:
+            self.players['list'].append(player)
+        if len(self.players['list']) == 2  and self.game == 0:
+            self.players['list']= random.sample(self.players['list'], 2)
 
     def startgame(self):
         self.game= 1
-        self.correct_playerturn() if self.imported else self.board.set_up_start_pieces()
+        if not self.imported: self.board.set_up_start_pieces()
+        elif self.player_and_turn_desired != None: 
+            self.correct_playerturn()
         self.move_handler(5,'Game Set Up')
 
     def endgame_check(self):
@@ -43,7 +50,7 @@ class Game_Chess():
             self.game= 0
             if self.board.pieces[self.n_turn]['K'][0].position in [j for i in k_check.values() for j in i]:
                 self.winner= self.turn
-                return self.move_handler(3, 'Checkmate, winner is '+str(self.players[self.winner]))
+                return self.move_handler(3, 'Checkmate, winner is '+str(self.players['list'][self.winner]))
             else:
                 self.winner= 2
                 return self.move_handler(3, 'Draw')
@@ -70,33 +77,30 @@ class Game_Chess():
     def move(self, player, move):
         if self.game == 0:
             return self.move_handler(0, "Game Over")
-        if self.players[self.turn] != player:
+        if self.players['list'][self.turn] != player:
             return self.move_handler(4, "Its not your turn")
-#Pure the moves
-
+        #Capture possible moves
         k_check= self.board.king_move_check(self.turn, self.n_turn)
-
-# This gives every value in k_check        [j for i in k_check.values() for j in i]
-
-#Castling
+        # This gives every value in k_check        [j for i in k_check.values() for j in i]
+        #Castling
         if move == 'OO' or move == 'OOO':
             state= self.castle(move)
             w_t_r= {1: 'Castled '+move, 0: 'Invalid'+move}
             if state == 1:
-#Win cond.
+                #Win cond.
                 game_over=self.endgame_check()
                 if game_over != None:
                     return game_over
 
                 self.turn_change()
             return self.move_handler(state, w_t_r[state])
-
-
         if len(move) == 2:
             piece= 'P'
         else:
             piece = move[0]
             move = move[1:]
+        if piece not in k_check:
+            return self.move_handler(0, 'No valid piece')
         if move in k_check[piece]:
             quant= []
             for x in self.board.pieces[self.turn][piece]:
@@ -104,19 +108,19 @@ class Game_Chess():
                     quant.append(x)
             if len(quant) == 1:
                 quant[0].movement(move)
-#Win cond.
+                #Win cond.
                 game_over=self.endgame_check()
                 if game_over != None:
                     return game_over
                 self.turn_change()
                 return self.move_handler(1, self.board.table[move].name + " moved to " + move)
-#Makes player to choose between the pieces
+            #Makes player to choose between the pieces
             else:
                 quant_chosen = self.mul_pieces(quant)
                 if quant_chosen == 0:
                     return self.move_handler(0, "No valid movement")
                 quant_chosen.movement(move)
-#Win cond.
+                #Win cond.
                 game_over=self.endgame_check()
                 if game_over != None:
                     return game_over
@@ -168,6 +172,7 @@ class Game_Chess():
 
     def import_board(self, fen_notation, player_and_turn_desired):
         fen_notation= fen_notation.split(' ')
+        Error_handler_notation_general(fen_notation, self.error)
         board= fen_notation[0]
         self.FEN_pieces_implementation(board)
         
@@ -181,27 +186,27 @@ class Game_Chess():
         if _imported_turn != self.turn:
             self.turn_change()
         self.imported = True
-        self.player_and_turn_desired = player_and_turn_desired
+        if len(player_and_turn_desired) == 2:
+            self.player_and_turn_desired = player_and_turn_desired
         return
 
     def FEN_pieces_implementation(self, notation):
         rows= notation.split('/')[::-1]
-        for x in range(len(rows)):
+        Error_handler_pieces_implementation(rows, self.error)
+        for x_number,x_string in enumerate(rows):
             spaces_blank_behind= 0
-            for i in range(len(rows[x])):
-                piece= rows[x][i]
+            for i_number, i_piece_or_blank_space in enumerate(x_string):
+                piece= i_piece_or_blank_space
                 if piece.isnumeric():
                     spaces_blank_behind += int(piece)-1
                     continue
-                correction= (i)+(spaces_blank_behind)
-                position= '{}{}'.format(chr(97+correction), x+1)
+                correction= (i_number)+(spaces_blank_behind)
+                position= '{}{}'.format(chr(97+correction), x_number+1)
                 importing_pieces_dict[piece.upper()](position, piece.isupper(), self.board)
 
     def FEN_castling_implementation(self, _notation):
         #This is because the 0 indexed if the list is not reversed is the white instruction
         #but 0 is black in the pieces.
-        _qk_dict= {'K': 1, 'Q': 0}
-        _qk_reference= 'KQkq'
         _ref_to_rook= {'K': 'h1', 'k': 'h8', 'Q': 'a1', 'q': 'a8'}
         if _notation == '-':
             self.board.pieces[1]['K'][0].last_movement= 'e1'
@@ -215,14 +220,6 @@ class Game_Chess():
                         _castle_allowed.append(x)
                     elif x not in _castle_allowed:
                         x.last_movement= 'e1'
-
-        #else:
-        #    _missing_castles= []
-        #    for x in _qk_reference:
-        #        if x not in _notation:
-        #            _missing_castles.append(x)
-        #    for x in _missing_castles:
-        #        self.board.pieces[x.isupper()]['R'][_qk_dict[x.upper()]].last_movement = 'e1'
 
 
     def FEN_en_peassant_implementation(self, _notation):
@@ -241,8 +238,8 @@ class Game_Chess():
     def correct_playerturn(self):
         player= self.player_and_turn_desired[0]
         turn_desired= self.__class__.turn_dict[self.player_and_turn_desired[1]]
-        if self.players[turn_desired] != player:
-            self.players= self.players[::-1]
+        if self.players['list'][turn_desired] != player:
+            self.players['list']= self.players['list'][::-1]
 
 
 importing_pieces_dict= {

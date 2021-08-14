@@ -12,7 +12,7 @@ def response_wait(game, text):
     if game.type != 'private':
         game.updater.bot.sendMessage(chat_id=game.id, text=text)
     else:
-        game.updater.bot.sendMessage(chat_id=game.players[game.turn][1], text=text)
+        game.updater.bot.sendMessage(chat_id=game.players['list'][game.turn][1], text=text)
     t= 0
     while game.response['selection'] == None and t < 60:
         time.sleep(1)
@@ -23,12 +23,27 @@ def response_wait(game, text):
 
 class Game_P_Chess(Game_Chess):
     def __init__(self, n_id, type, telegrambot):
-        super().__init__(promotion_func=self.telegram_promotion)
         #self.id is a var that saves the id of the chat it belongs, that way in case of mul_pieces, it can send a message so the player picks (it will only be used in group chats, in matches through Chorichess it isnt needed)
         self.id= n_id
         self.type= type
         self.updater= telegrambot
         self.response= {'selection': None}
+        super().__init__(promotion_func=self.telegram_promotion)
+
+    def create_exceptions(self):
+        class ToMessageError(Exception):
+            def __init__(self_of_error):
+                self_of_error.updater= self.updater
+                self_of_error.players= self.players
+            def error(self_of_error, message):
+                super().__init__(message)
+                if len(self_of_error.players['list']) == 1:
+                    self_of_error.updater.bot.sendMessage(chat_id=self_of_error.players['list'][0][1], text=message)
+                elif len(self_of_error.players['list']) == 2:
+                    self_of_error.updater.bot.sendMessage(chat_id=self_of_error.players['list'][self.turn][1], text=message)
+                
+                raise self_of_error
+        self.error = ToMessageError().error
 
     def move_handler(self, state, msg):
         if state != 0 and state !=4:
@@ -37,35 +52,35 @@ class Game_P_Chess(Game_Chess):
                 if self.type != 'private':
                     self.updater.bot.sendMessage(chat_id=self.id, text=msg)
                 else:
-                    self.updater.bot.sendMessage(chat_id=self.players[1][1], text=msg)
-                    self.updater.bot.sendMessage(chat_id=self.players[0][1], text=msg)
+                    self.updater.bot.sendMessage(chat_id=self.players['list'][1][1], text=msg)
+                    self.updater.bot.sendMessage(chat_id=self.players['list'][0][1], text=msg)
             else:
                 if self.type != 'private':
                     self.updater.bot.sendPhoto(chat_id=self.id, photo=open(Path('b_imgs/{}/c_move.png'.format(self.id)), 'rb'))
                     self.updater.bot.sendMessage(chat_id=self.id, text=msg)
                 else:
-                    self.updater.bot.sendPhoto(chat_id=self.players[1][1], photo=open(Path('b_imgs/{}/c_move.png'.format(self.id)), 'rb'))
-                    self.updater.bot.sendMessage(chat_id=self.players[1][1], text=msg)
-                    self.updater.bot.sendPhoto(chat_id=self.players[0][1], photo=open(Path('b_imgs/{}/c_move_black.png'.format(self.id)), 'rb'))
-                    self.updater.bot.sendMessage(chat_id=self.players[0][1], text=msg)                    
+                    self.updater.bot.sendPhoto(chat_id=self.players['list'][1][1], photo=open(Path('b_imgs/{}/c_move.png'.format(self.id)), 'rb'))
+                    self.updater.bot.sendMessage(chat_id=self.players['list'][1][1], text=msg)
+                    self.updater.bot.sendPhoto(chat_id=self.players['list'][0][1], photo=open(Path('b_imgs/{}/c_move_black.png'.format(self.id)), 'rb'))
+                    self.updater.bot.sendMessage(chat_id=self.players['list'][0][1], text=msg)                    
                 if self.type != 'singleplayer' and self.game == 1:
                     if self.type != 'private':
-                        self.updater.bot.sendMessage(chat_id=self.id, text='Its {} turn'.format(self.players[self.turn][0]))
+                        self.updater.bot.sendMessage(chat_id=self.id, text='Its {} turn'.format(self.players['list'][self.turn][0]))
                     else:
-                        self.updater.bot.sendMessage(chat_id=self.players[self.turn][1], text='Your turn!')
+                        self.updater.bot.sendMessage(chat_id=self.players['list'][self.turn][1], text='Your turn!')
         elif state == 0:
             if self.type != 'private':
                 self.updater.bot.sendMessage(chat_id=self.id, text=msg)
             else:
-                self.updater.bot.sendMessage(chat_id=self.players[self.turn][1], text=msg)
+                self.updater.bot.sendMessage(chat_id=self.players['list'][self.turn][1], text=msg)
         elif state == 4:
             if self.type != 'private':
                 self.updater.bot.sendMessage(chat_id=self.id, text=msg)
             else:
-                self.updater.bot.sendMessage(chat_id=self.players[self.n_turn][1], text=msg)
+                self.updater.bot.sendMessage(chat_id=self.players['list'][self.n_turn][1], text=msg)
         
         if state == 3:
-            Game_Handlers[1].delete_room(self.id, self.players)
+            Game_Handlers[1].delete_room(self.id, self.players['list'])
         return state
 
     def img_s(self):
@@ -79,7 +94,7 @@ class Game_P_Chess(Game_Chess):
         if self.type != 'private':
             [self.board.c_img.paste(z.img, (128*(ord(z.position[0])-97), 128*(invert_n[int(z.position[1])-1])), z.img) for x in self.board.pieces for i in self.board.pieces[x] for z in self.board.pieces[x][i]]
             self.board.c_img.save(Path('b_imgs/{}/c_move.png'.format(self.id)))
-#Creates custom boards for black and white players.
+#Creates custom boards for black and white players['list'].
         elif self.type == 'private':
             self.board.c_img_black = self.board.b_img.copy()
             for x in self.board.pieces:
@@ -93,11 +108,11 @@ class Game_P_Chess(Game_Chess):
 
     def resign(self, resigner):
         self.game= 0
-        if self.players.index(resigner) == 1:
+        if self.players['list'].index(resigner) == 1:
             self.winner=0
-        if self.players.index(resigner) == 0:
+        if self.players['list'].index(resigner) == 0:
             self.winner=1
-        return self.move_handler(3, "{} resigned, {} wins".format(resigner[0], self.players[self.winner][0]))
+        return self.move_handler(3, "{} resigned, {} wins".format(resigner[0], self.players['list'][self.winner][0]))
 
 #These ones wait for a response from chat. 
     def mul_pieces(self, quant):
@@ -115,6 +130,7 @@ class Game_P_Chess(Game_Chess):
         text= 'Choose the piece you want the Pawn to promote to: /sel Q/B/N/R'
         selection= response_wait(self, text)
         return selection
+
 
 
 class Game_Bot_Chess(Game_P_Chess):
@@ -139,7 +155,7 @@ class Game_Bot_Chess(Game_P_Chess):
 
     def bot_move(self):
         lm_piece = self.board.lm_piece
-        if self.players[self.turn] == self.player_bot:
+        if self.players['list'][self.turn] == self.player_bot:
             if lm_piece == '':
                 movement_bot= self.stockfish.move()
             else:
@@ -174,7 +190,7 @@ class Game_Bot_Chess(Game_P_Chess):
         return super().import_board(fen_notation, player_and_turn_desired)
 
     def mul_pieces(self, quant):
-        if self.players[self.turn] == self.player_bot:
+        if self.players['list'][self.turn] == self.player_bot:
             for x in range(len(quant)):
                 if self.response['position'] == quant[x].position:
                     return quant[x]
@@ -183,7 +199,7 @@ class Game_Bot_Chess(Game_P_Chess):
 
 
     def telegram_promotion(game):
-        if game.players[game.turn] == game.player_bot:
+        if game.players['list'][game.turn] == game.player_bot:
             selection = game.response['selection']
             game.response['selection'] = None
             return selection

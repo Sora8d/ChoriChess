@@ -4,6 +4,8 @@ b_imgs/
 venv/
 stockfish_14_linux_x64_bmi2/
 config.env
+cchess.db
+cchess_test.db
 logs/
 stockfishes/
 debug.py
