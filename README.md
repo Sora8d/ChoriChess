@@ -2,32 +2,26 @@ English:
 
   Chorichess!
       This is a TelegramBot that creates and handles Chess games between players,
-      you can also play by yourself!
+      you can also play by yourself or againt a bot!
 
-      Guide:
+      Code walkthrough:
 
-      roclasses.py= Its a "session" ro_manager object, also in FAIF, helps creating rooms and
-      all the user handling.
+      chori_bot_logics= Contains the different functions that will become the telegram_bot handlers in chori_bot.py
 
-      chess.py= My own chess logic, using a Game_Chess object that has the board and pawns.
-      By itself it is fully playable on Python shell.
+      db_funcs= Contains the database object and the decorators used in different parts of the project, its the most recent addition (implemented in 3.4) so its in its early stages.
 
-      chess_bot.py= Here everything comes together, it contains the Telegram Bot, its commands,
-      and modified versions of ro_manager object and Game_Chess object to suit the bot accordingly. 
+      engine_logics= Contains everything related to the Chess objects directly. Note: The logics of the game are handmade, meanwhile stockfish_bot is an implementation from stockfishpy.
 
 Español:
 
   Chorichess!
     Este es un Bot de Telegram que crea y maneja juegos de Ajedrez entre jugadores,
-    tambien puedes jugar contigo mismo!
+    tambien puedes jugar contigo mismo o contra un bot!
 
     Guia:
 
-    roclasses.py= Es un objeto de "sesiones" 'ro_manager', tambien usado en FAIF, ayuda a crear salas
-    y a manejar a los usuarios.
+    chori_bot_logics= Contiene las diferentes funciones que seran los Handlers del Bot de Telegram una vez importadas
 
-    chess.py= My propia logica de ajedrez, usando un objeto "Game_Chess" objeto que contiene el tablero
-    y las piezas. Se puede jugar por si solo en la Shell de Python.
+    db_funcs= Contiene el objeto database y los decoradores usados por todo el proyecto, es la adición mas reciente (agregado en 3.4) por lo que esta en etapas tempranas de desarrollo.
 
-    chess_bot.py= Aquí todo se une, contiene el Bot de Telegram, sus comandos, y versiones modificadas de
-    de 'ro_manager' y 'Game_Chess' para acomodarse al bot.
+    engine_logics= Contiene todo lo relacionado con los objetos de Ajedrez directamente. Nota: La logica del juego es de mano propia, mientras que stockfish_bot es una implementación de stockfishpy.
