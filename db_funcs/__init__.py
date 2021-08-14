@@ -18,6 +18,37 @@ CREATE TABLE IF NOT EXISTS users (
     );
     """
 
+create_active_games_table="""
+CREATE TABLE IF NOT EXISTS games (
+    id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+    gameID TEXT NOT NULL UNIQUE,
+    turns TEXT,
+    white_playerID INTEGER NOT NULL,
+    black_playerID INTEGER NOT NULL,
+    CONSTRAINT fk_white_user_id 
+    FOREIGN KEY(white_playerID) REFERENCES users(id),
+    CONSTRAINT fk_black_user_id
+    FOREIGN KEY(black_playerID) REFERENCES users(id)
+)
+"""
+
+create_history_games_table="""
+CREATE TABLE IF NOT EXISTS games (
+    id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+    gameID TEXT NOT NULL UNIQUE,
+    turns TEXT,
+    white_playerID INTEGER NOT NULL,
+    black_playerID INTEGER NOT NULL,
+    winner INTEGER NOT NULL,
+    CONSTRAINT fk_white_user_id 
+    FOREIGN KEY(white_playerID) REFERENCES users(id),
+    CONSTRAINT fk_black_user_id
+    FOREIGN KEY(black_playerID) REFERENCES users(id)
+)
+"""
+
+
+
 #To avoid data corruption
 def synchronity_wrapper(func):
     def wrapper(self, *args, **kwargs):
@@ -64,6 +95,20 @@ class DBObject():
         """
         cursor = self.execute_query(query, user)
         return cursor.lastrowid
+
+    def insert_game(self, game):
+        query="""
+        INSERT INTO games (gameID, white_playerID, black_playerID, state) VALUES (?, ?, ?, ?);
+        """
+        cursor= self.execute_query(query, game)
+        return cursor.lastrowid
+
+    def search_game_by_gameID(self, id):
+        query="""
+        SELECT * FROM games WHERE gameID=?;
+        """
+        cursor= self.execute_query(query, (id,))
+        return cursor.fetchone()
 
     def search_by_telegram_id(self, telegram_id):
         query="""

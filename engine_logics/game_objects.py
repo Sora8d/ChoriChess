@@ -1,5 +1,5 @@
 
-from engine_logics.base_chess import Game_Chess
+from engine_logics.base_chess import Game_Chess, transform_pos_to_FEN
 from engine_logics.stockfish_bot import Bridge_Stock_Chess
 import time
 import os
@@ -45,6 +45,7 @@ class Game_P_Chess(Game_Chess):
                 raise self_of_error
         self.error = ToMessageError().error
 
+    @transform_pos_to_FEN
     def move_handler(self, state, msg):
         if state != 0 and state !=4:
             self.img_s()

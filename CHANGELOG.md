@@ -1,3 +1,10 @@
+3.4.1 (14/08/2021):
+    Changes:
+
+    1- Added a game table.
+
+    2- In process of adding a decorator to save notation of moves for storage purposes.
+
 3.4 (13/08/2021):
     Changes:
 

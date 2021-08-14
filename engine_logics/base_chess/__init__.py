@@ -1,4 +1,4 @@
-
+from typing import final
 from engine_logics.errors.chess_errors_handler import Error_handler_notation_general, Error_handler_pieces_implementation
 import random
 from PIL import Image
@@ -10,6 +10,56 @@ def cli_promotion():
     print('What do you want this Pawn to be?')
     selection= input('Q/B/N/R \n')
     return selection
+
+def transform_pos_to_FEN(func):
+    _upper_lower= {1:lambda x: x.upper(), 0:lambda x: x.lower()}
+    def wrapper(self, state, msg):
+        result=func(self,state,msg)
+        if state != 0 and state != 4:
+            _board = self.board
+            _pieces= _board.pieces
+            final_notation= ""
+            #arranging pieces
+            _pieces_notation= ''
+            _spaces_blank= 0
+            #Since dicts are now ordered this just works
+
+            for x in range(1,9):
+                for i in range(8):
+                    ichar=chr(97+i)
+                    position= ichar+str(x)
+                    print(position)
+                    piece_in_position= _board.table[position]                  
+                    if piece_in_position == None and ichar != 'h':
+                        _spaces_blank+=1
+                    else:
+                        if _spaces_blank > 0: 
+                            _pieces_notation+= str(_spaces_blank)
+                            _spaces_blank=0
+                        if piece_in_position!= None:
+                            _pieces_notation += _upper_lower[piece_in_position.colour](piece_in_position.type)
+                        if ichar == 'h':
+                            _pieces_notation+= '/'
+            final_notation= _pieces_notation+' '
+            #writing turn
+            final_notation += {1:'w',0:'b'}[self.turn]+' '
+            #arranging castling
+            _castle_no= '-'
+            _castle_yes= ''
+            for king in _pieces[1]['K']+_pieces[0]['K']:
+                if king.last_movement == None:
+                    for rook in _pieces[king.colour]['R']:
+                        if rook.last_movement == None:
+                            _castle_yes += _upper_lower[rook.colour]({'a':'Q', 'h':'K'}[rook.position[0]])
+            final_notation+= _castle_no if _castle_yes == '' else _castle_yes
+            final_notation+=' '
+            #arranging en_peassant
+            final_notation += '-' if _board.en_peassant == False else _board.lm_piece.position
+            final_notation+=' '
+            self.FEN_of_current_board= final_notation
+            print(self.FEN_of_current_board)
+        return result
+    return wrapper
 
 class Game_Chess():
     turn_dict={'w': 1, 'b': 0}
@@ -57,7 +107,7 @@ class Game_Chess():
         else:
             return None
 
-
+    @transform_pos_to_FEN
     def move_handler(self, state, msg):
         if state != 0 and state != 4 and self.use_imgs:
             self.img_s()
