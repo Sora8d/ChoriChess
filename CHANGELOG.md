@@ -1,7 +1,19 @@
+3.4.3 (16/08/2021):
+    Changes:
+    1- Fixed bug with decorators an kwargs.
+    2- Made games switch from active to history table when finished, now the SQL first version is  almost done.
+
+    TODO:
+
+    1- Make importing games work properly with the database.
+    2- Make players able to have more than one active game per chat (change between active games).
+    3- Add dates column to active_games in order to delete old abandoned games.
+
+
 3.4.2 (15/08/2021):
     Changes:
 
-    1- game table is not divided into active_games and history_games
+    1- game table is now divided into active_games and history_games
 
     2- Games are now succesfully stored in the database, and it updates after every move, storing them in a JSON.
 

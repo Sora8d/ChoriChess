@@ -220,3 +220,7 @@ class Game_Database_Chess(Game_P_Chess):
     @update_game_decorator
     def move(self, player, move):
         return super().move(player, move)
+    
+    @update_game_decorator
+    def resign(self, resigner):
+        return super().resign(resigner)
