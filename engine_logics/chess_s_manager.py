@@ -1,7 +1,7 @@
 from db_funcs import ChoriChessDB
 from pathlib import Path
 from shutil import rmtree
-from engine_logics.game_objects import Game_P_Chess, Game_Bot_Chess
+from engine_logics.game_objects import Game_P_Chess, Game_Bot_Chess, Game_Database_Chess
 from engine_logics.session_manager import ro_manager
 import time
 #TODO
@@ -23,7 +23,7 @@ class Chess_Bot_Handler(ro_manager):
 
     def __init__(self):
         super().__init__()
-        self.type_games = {0:Game_P_Chess, 1:Game_Bot_Chess}
+        self.type_games = {0:Game_P_Chess, 1:Game_Bot_Chess, 2:Game_Database_Chess}
 
     def set_up_telegrambot(self, telegrambot):
         self.telegrambot = telegrambot
@@ -35,7 +35,7 @@ class Chess_Bot_Handler(ro_manager):
         return [str(self.room_members[room]['Board'])]
 
     def multiplayer_t(self, *args, **kwargs):
-        room= self.create_room(kwargs['ef_id'], kwargs['type_chat'], 0)
+        room= self.create_room(kwargs['ef_id'], kwargs['type_chat'], 2)
         self.put_users(kwargs['ef_id'], kwargs['user']['id'], room)
         return ['Share this token with whoever you want to play', room]
 
@@ -57,7 +57,7 @@ class Chess_Bot_Handler(ro_manager):
 #Board will later be the game object, Private is an option for when i wanna add a game queue, chat_id is the id of the chat that is later passed to the game,
 #Ids is a set of the ids of the players, essential to play through Chorichess without a group.
         self.room_members[token]= {'Board':'', 'Players':[], 'Type': type_chat, 'chat_id': id, 'ids': set()}
-        self.room_members[token]['Board'] = self.type_games[bot_nobot](self.room_members[token]['chat_id'], self.room_members[token]['Type'], self.telegrambot)
+        self.room_members[token]['Board'] = self.type_games[bot_nobot](token, self.room_members[token]['chat_id'], self.room_members[token]['Type'], self.telegrambot)
         return token
 
     def put_users(self, sid, user_id, room):

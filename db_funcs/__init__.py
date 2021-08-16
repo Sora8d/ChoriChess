@@ -3,6 +3,7 @@ from sqlite3 import Error
 import time
 from pathlib import Path
 from config import Config
+import json
 
 def dict_factory(cursor,row):
     d= {}
@@ -19,10 +20,11 @@ CREATE TABLE IF NOT EXISTS users (
     """
 
 create_active_games_table="""
-CREATE TABLE IF NOT EXISTS games (
+CREATE TABLE IF NOT EXISTS active_games (
     id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
     gameID TEXT NOT NULL UNIQUE,
-    turns TEXT,
+    turn INTEGER NOT NULL,
+    moves TEXT NOT NULL,
     white_playerID INTEGER NOT NULL,
     black_playerID INTEGER NOT NULL,
     CONSTRAINT fk_white_user_id 
@@ -33,10 +35,10 @@ CREATE TABLE IF NOT EXISTS games (
 """
 
 create_history_games_table="""
-CREATE TABLE IF NOT EXISTS games (
+CREATE TABLE IF NOT EXISTS history_games (
     id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
     gameID TEXT NOT NULL UNIQUE,
-    turns TEXT,
+    moves TEXT,
     white_playerID INTEGER NOT NULL,
     black_playerID INTEGER NOT NULL,
     winner INTEGER NOT NULL,
@@ -98,14 +100,14 @@ class DBObject():
 
     def insert_game(self, game):
         query="""
-        INSERT INTO games (gameID, white_playerID, black_playerID, state) VALUES (?, ?, ?, ?);
+        INSERT INTO active_games (gameID, white_playerID, black_playerID, state) VALUES (?, ?, ?, ?);
         """
         cursor= self.execute_query(query, game)
         return cursor.lastrowid
 
     def search_game_by_gameID(self, id):
         query="""
-        SELECT * FROM games WHERE gameID=?;
+        SELECT * FROM active_games WHERE gameID=?;
         """
         cursor= self.execute_query(query, (id,))
         return cursor.fetchone()
@@ -128,6 +130,7 @@ class DBObject():
 ChoriChessDB= DBObject()
 ChoriChessDB.create_connection(Path(Config.DATABASE))
 ChoriChessDB.execute_query(create_users_table)
+ChoriChessDB.execute_query(create_active_games_table)
 
 def telegram_database_decorator(func):
     def wrapper(*args, **kwargs):
@@ -142,4 +145,36 @@ def telegram_database_decorator(func):
         else:
             result= func(*args, *kwargs)
             return result
+    return wrapper
+
+def insert_game(func):
+    def wrapper(self):
+        result= func(self)
+        query="""
+        INSERT INTO active_games (gameID, white_playerID, black_playerID, moves, turn) VALUES (?, ?, ?, ?, ?);
+        """
+        ChoriChessDB.execute_query(query, (self.game_id, self.players['list'][1][1], self.players['list'][0][1], '{}',1))
+        print(ChoriChessDB.search_game_by_gameID(self.game_id))
+        return result
+    return wrapper
+
+def update_game_decorator(func):
+    def wrapper(self, player, move):
+        result= func(self,player,move)
+        if result != 0 and result != 4:
+            game_id = self.game_id
+            turn_number = self.turn_number
+            move_notation = self.FEN_of_current_pos
+            moves_info =json.loads(ChoriChessDB.search_game_by_gameID(game_id)['moves'])
+            moves_info[turn_number]= move_notation
+            moves_info_json = json.dumps(moves_info)
+            update_query="""
+            UPDATE active_games
+            SET moves = ?,
+            turn= ?
+            WHERE gameID= ?;
+            """
+            ChoriChessDB.execute_query(update_query, (moves_info_json, self.turn ,game_id))
+            print(ChoriChessDB.search_game_by_gameID(game_id))
+        return result
     return wrapper

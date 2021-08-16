@@ -1,3 +1,22 @@
+3.4.2 (15/08/2021):
+    Changes:
+
+    1- game table is not divided into active_games and history_games
+
+    2- Games are now succesfully stored in the database, and it updates after every move, storing them in a JSON.
+
+    3- Finished move to notation decorator, changed it to a function instead of a decorator.
+
+    4- Now games save the turn they are in (turn 1, 2, 3, etc), and the token as game_id (the previous id variable has changed to chat_id)
+
+    5- Multiplayer games (the ones that will be stored in the database) now have their own Game object, as to add the database decorators required for storage, other games are not of interest to store.
+
+    TODO:
+
+    1- Move active_games to history_games after someone wins.
+
+    2- Make importing games work properly with the database.
+
 3.4.1 (14/08/2021):
     Changes:
 
