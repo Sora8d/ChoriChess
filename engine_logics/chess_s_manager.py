@@ -4,11 +4,8 @@ from shutil import rmtree
 from engine_logics.game_objects import Game_P_Chess, Game_Bot_Chess, Game_Database_Chess
 from engine_logics.session_manager import ro_manager
 import time
-#TODO
-#Finish bot, now bugged...
     
 
-#Games and saved stuff, for GROUP GAMES
 class Chess_Bot_Handler(ro_manager):
     @staticmethod
     def start_handler(game):
@@ -54,9 +51,7 @@ class Chess_Bot_Handler(ro_manager):
 
     def create_room(self, id, type_chat, bot_nobot):
         token='GC'+str(time.time())
-#Board will later be the game object, Private is an option for when i wanna add a game queue, chat_id is the id of the chat that is later passed to the game,
-#Ids is a set of the ids of the players, essential to play through Chorichess without a group.
-        self.room_members[token]= {'Board':'', 'Players':[], 'Type': type_chat, 'chat_id': id, 'ids': set()}
+        self.room_members[token]= {'Board':'', 'Players':[], 'Type': type_chat, 'chat_id': id}
         self.room_members[token]['Board'] = self.type_games[bot_nobot](token, self.room_members[token]['chat_id'], self.room_members[token]['Type'], self.telegrambot)
         return token
 
@@ -70,7 +65,6 @@ class Chess_Bot_Handler(ro_manager):
         self.members[sid][user_id].append(username)
         self.members[sid][user_id].append(room)
         self.room_members[room]['Players'].append([username, user_id])
-        self.room_members[room]['ids'].add(user_id)
         game = self.room_members[room]['Board']
         game.add_player([username, user_id])
         return room

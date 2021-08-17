@@ -112,14 +112,6 @@ class Game_P_Chess(Game_Chess):
             self.board.c_img_black.save(Path('b_imgs/{}/c_move_black.png'.format(self.chat_id)))
         return 
 
-    def resign(self, resigner):
-        self.game= 0
-        if self.players['list'].index(resigner) == 1:
-            self.winner=0
-        if self.players['list'].index(resigner) == 0:
-            self.winner=1
-        return self.move_handler(3, "{} resigned, {} wins".format(resigner[0], self.players['list'][self.winner][0]))
-
 #These ones wait for a response from chat. 
     def mul_pieces(self, quant):
         text= ''

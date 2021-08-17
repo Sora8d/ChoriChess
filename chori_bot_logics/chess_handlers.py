@@ -1,7 +1,7 @@
 from engine_logics.chess_s_manager import Chess_Bot_Handler
 from engine_logics.game_objects import Game_Handlers
 from telegram.ext.dispatcher import run_async
-from db_funcs import telegram_database_decorator
+from db_funcs import database_user_check
 
 CBH= Chess_Bot_Handler()
 chess_g_dict={
@@ -31,7 +31,7 @@ def messagegames(type, game, res, id, context):
         context.bot.send_message(chat_id=id, text=res[0])
     return game
 
-@telegram_database_decorator
+@database_user_check
 def chess_g(update, context):
     game, res= master(update, context, context.args)
     CBH.start_handler(game)
@@ -62,7 +62,7 @@ def resign_g(update, context):
     username= CBH.members[update.effective_chat.id][update.message.from_user['id']][0]
     res=game.resign([username, update.message.from_user['id']])
 
-@telegram_database_decorator
+@database_user_check
 def import_g(update, context):
     game, res= master(update, context, context.args[4:])
     action= context.args

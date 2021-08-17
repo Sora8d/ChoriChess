@@ -99,9 +99,9 @@ class Game_Chess():
             return None
 
     def move_handler(self, state, msg):
-        if state != 0 and state != 4 and self.use_imgs:
+        if state != 0 and state != 4:
             self.FEN_of_current_pos= transform_pos_to_FEN(self.board, self.turn)
-            self.img_s()
+            if self.use_imgs: self.img_s()
         return state, msg
 
 #If movement is valid creates the board img
@@ -207,6 +207,14 @@ class Game_Chess():
             return 0
         else:
             return quant[election]
+
+    def resign(self, resigner):
+        self.game= 0
+        if self.players['list'].index(resigner) == 1:
+            self.winner=0
+        if self.players['list'].index(resigner) == 0:
+            self.winner=1
+        return self.move_handler(3, "{} resigned, {} wins".format(resigner[0], self.players['list'][self.winner][0]))
 
 #A function that serves the purpose of importing boards, now not every game needs to start from zero.
 #For now it will just get the turn and positions, later castling information will be added
